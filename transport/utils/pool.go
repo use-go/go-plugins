@@ -6,15 +6,21 @@ import (
 	"time"
 )
 
+//Pool Struct
+type Pool struct {
+	mp             ConcurrentMap
+	outSessionPool OutSessionPool
+}
+
 //OutSessionPool for udp session
 type OutSessionPool struct {
-	Pool      ConnPool
-	dur       int
-	isTLS     bool
-	certBytes []byte
-	keyBytes  []byte
-	address   string
-	timeout   int
+	Pool ConnPool
+	dur  int
+	//	isTLS     bool
+	// certBytes []byte
+	// keyBytes  []byte
+	address string
+	timeout int
 }
 
 //ConnPool to use
@@ -30,6 +36,23 @@ type poolConfig struct {
 	Release    func(interface{})
 	InitialCap int
 	MaxCap     int
+}
+
+//GetConn retrive a connection for pool
+func (s *Pool) GetConn(connKey string) (conn interface{}, isNew bool, err error) {
+	isNew = !s.mp.Has(connKey)
+	var _conn interface{}
+	if isNew {
+		_conn, err = s.outSessionPool.Pool.Get()
+		if err != nil {
+			return nil, false, err
+		}
+		s.mp.Set(connKey, _conn)
+	} else {
+		_conn, _ = s.mp.Get(connKey)
+	}
+	conn = _conn
+	return
 }
 
 //NewConnPool create a pool

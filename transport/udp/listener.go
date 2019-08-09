@@ -10,8 +10,11 @@ import (
 	"github.com/micro/go-micro/util/log"
 )
 
+//　　UDP : 1500 - IP(20) - UDP(8) = 1472(Bytes)
+const defaultUDPMaxPackageLenth = 1472
+
 func (u *udpListener) Addr() string {
-	return u.listener.Addr().String()
+	return u.listener.LocalAddr().String()
 }
 
 func (u *udpListener) Close() error {
@@ -23,8 +26,10 @@ func (u *udpListener) Accept(fn func(transport.Socket)) error {
 	var tempDelay time.Duration
 
 	for {
-		c, err := u.listener.Accept()
-		//bytesLenth, comefrom, err := u.listenerCon.ReadFromUDP(buf)
+
+		buf := make([]byte, defaultUDPMaxPackageLenth)
+		//conn, err := u.listener.Accept()
+		bytesLenth, fromAddr, err := u.listener.ReadFromUDP(buf)
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Temporary() {
 				if tempDelay == 0 {
@@ -42,13 +47,16 @@ func (u *udpListener) Accept(fn func(transport.Socket)) error {
 			return err
 		}
 
-		encBuf := bufio.NewWriter(c)
+		encBuf := bufio.NewWriter(u.listener)
 		sock := &udpSocket{
-			timeout: u.timeout,
-			conn:    c,
-			encBuf:  encBuf,
-			enc:     gob.NewEncoder(encBuf),
-			dec:     gob.NewDecoder(c),
+			timeout:    u.timeout,
+			conn:       u.listener,
+			encBuf:     encBuf,
+			enc:        gob.NewEncoder(encBuf),
+			dec:        gob.NewDecoder(u.listener),
+			packageBuf: buf,
+			packageLen: bytesLenth,
+			dstAddr:    fromAddr,
 		}
 
 		go func() {

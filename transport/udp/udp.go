@@ -25,14 +25,14 @@ type udpClient struct {
 }
 
 type udpSocket struct {
-	conn    net.Conn
-	enc     *gob.Encoder
-	dec     *gob.Decoder
-	encBuf  *bufio.Writer
-	timeout time.Duration
-	//	packageBuf []byte
-	//	packageLen int
-	//	from       *net.UDPAddr
+	conn       *net.UDPConn
+	enc        *gob.Encoder
+	dec        *gob.Decoder
+	encBuf     *bufio.Writer
+	timeout    time.Duration
+	packageBuf []byte
+	packageLen int
+	dstAddr    *net.UDPAddr
 }
 
 //UDPServerRecvMaxLen Default UDP buffer len
@@ -40,7 +40,7 @@ const UDPServerRecvMaxLen = 2048
 
 type udpListener struct {
 	timeout  time.Duration
-	listener net.Listener
+	listener *net.UDPConn
 	opts     transport.ListenOptions
 }
 

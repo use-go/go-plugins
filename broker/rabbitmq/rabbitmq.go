@@ -300,7 +300,7 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 	}
 }
 
-func (r *rbroker) getExchange() exchange {
+func (r *rbroker) getExchange() Exchange {
 
 	ex := DefaultExchange
 

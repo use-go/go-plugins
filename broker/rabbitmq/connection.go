@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	DefaultExchange = exchange{
-		name: "micro",
+	DefaultExchange = Exchange{
+		Name: "micro",
 	}
 	DefaultRabbitURL      = "amqp://guest:guest@127.0.0.1:5672"
 	DefaultPrefetchCount  = 0
@@ -43,7 +43,7 @@ type rabbitMQConn struct {
 	Connection      *amqp.Connection
 	Channel         *rabbitMQChannel
 	ExchangeChannel *rabbitMQChannel
-	exchange        exchange
+	exchange        Exchange
 	url             string
 	prefetchCount   int
 	prefetchGlobal  bool
@@ -55,22 +55,21 @@ type rabbitMQConn struct {
 	waitConnection chan struct{}
 }
 
-type exchange struct {
-	name    string
-	durable bool
+// Exchange is the rabbitmq exchange
+type Exchange struct {
+	// Name of the exchange
+	Name string
+	// Whether its persistent
+	Durable bool
 }
 
-func newRabbitMQConn(ex exchange, urls []string, prefetchCount int, prefetchGlobal bool) *rabbitMQConn {
+func newRabbitMQConn(ex Exchange, urls []string, prefetchCount int, prefetchGlobal bool) *rabbitMQConn {
 	var url string
 
 	if len(urls) > 0 && regexp.MustCompile("^amqp(s)?://.*").MatchString(urls[0]) {
 		url = urls[0]
 	} else {
 		url = DefaultRabbitURL
-	}
-
-	if len(ex.name) == 0 {
-		ex = DefaultExchange
 	}
 
 	ret := &rabbitMQConn{

@@ -42,8 +42,8 @@ func RequeueOnError() broker.SubscribeOption {
 	return setSubscribeOption(requeueOnErrorKey{}, true)
 }
 
-// Exchange is an option to set the Exchange
-func Exchange(e string) broker.Option {
+// ExchangeName is an option to set the ExchangeName
+func ExchangeName(e string) broker.Option {
 	return setBrokerOption(exchangeKey{}, e)
 }
 

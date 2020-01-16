@@ -163,7 +163,7 @@ func (r *rbroker) Publish(topic string, msg *broker.Message, opts ...broker.Publ
 		return errors.New("connection is nil")
 	}
 
-	return r.conn.Publish(r.conn.exchange.name, topic, m)
+	return r.conn.Publish(r.conn.exchange.Name, topic, m)
 }
 
 func (r *rbroker) Subscribe(topic string, handler broker.Handler, opts ...broker.SubscribeOption) (broker.Subscriber, error) {
@@ -305,11 +305,11 @@ func (r *rbroker) getExchange() Exchange {
 	ex := DefaultExchange
 
 	if e, ok := r.opts.Context.Value(exchangeKey{}).(string); ok {
-		ex.name = e
+		ex.Name = e
 	}
 
 	if d, ok := r.opts.Context.Value(durableExchange{}).(bool); ok {
-		ex.durable = d
+		ex.Durable = d
 	}
 
 	return ex

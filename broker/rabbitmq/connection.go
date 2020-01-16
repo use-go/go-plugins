@@ -208,10 +208,10 @@ func (r *rabbitMQConn) tryConnect(secure bool, config *amqp.Config) error {
 		return err
 	}
 
-	if r.exchange.durable {
-		r.Channel.DeclareDurableExchange(r.exchange.name)
+	if r.exchange.Durable {
+		r.Channel.DeclareDurableExchange(r.exchange.Name)
 	} else {
-		r.Channel.DeclareExchange(r.exchange.name)
+		r.Channel.DeclareExchange(r.exchange.Name)
 	}
 	r.ExchangeChannel, err = newRabbitChannel(r.Connection, r.prefetchCount, r.prefetchGlobal)
 
@@ -239,7 +239,7 @@ func (r *rabbitMQConn) Consume(queue, key string, headers amqp.Table, qArgs amqp
 		return nil, nil, err
 	}
 
-	err = consumerChannel.BindQueue(queue, key, r.exchange.name, headers)
+	err = consumerChannel.BindQueue(queue, key, r.exchange.Name, headers)
 	if err != nil {
 		return nil, nil, err
 	}

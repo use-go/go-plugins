@@ -23,11 +23,8 @@ type otWrapper struct {
 func StartSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		md = make(map[string]string)
+		md = make(metadata.Metadata)
 	}
-
-	// copy the metadata to prevent race
-	md = metadata.Copy(md)
 
 	// Find parent span.
 	// First try to get span within current service boundary.

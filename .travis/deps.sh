@@ -1,9 +1,8 @@
 #!/bin/bash -ex
 
-mod=$(go list -m | sed 's|/v2||g')
 PKGS=""
 for d in $(find * -name 'go.mod'); do
-  PKGS=" $PKGS ${mod}/$(dirname $d)/v2"
+  pushd $(dirname $d)
+  go mod download
+  popd
 done
-
-go mod download $PKGS

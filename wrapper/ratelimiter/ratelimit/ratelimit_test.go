@@ -8,11 +8,13 @@ import (
 	"context"
 
 	"github.com/juju/ratelimit"
+	bmemory "github.com/micro/go-micro/v2/broker/memory"
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/errors"
-	"github.com/micro/go-micro/v2/registry/memory"
+	rmemory "github.com/micro/go-micro/v2/registry/memory"
 	"github.com/micro/go-micro/v2/server"
+	tmemory "github.com/micro/go-micro/v2/transport/memory"
 )
 
 type testHandler struct{}
@@ -25,10 +27,10 @@ func (t *testHandler) Method(ctx context.Context, req *TestRequest, rsp *TestRes
 
 func TestRateClientLimit(t *testing.T) {
 	// setup
-	r := memory.NewRegistry()
+	r := rmemory.NewRegistry()
 	s := selector.NewSelector(selector.Registry(r))
-
-	testRates := []int{1, 10, 20, 100}
+	tr := tmemory.NewTransport()
+	testRates := []int{1, 10, 20}
 
 	for _, limit := range testRates {
 		b := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
@@ -36,6 +38,7 @@ func TestRateClientLimit(t *testing.T) {
 		c := client.NewClient(
 			// set the selector
 			client.Selector(s),
+			client.Transport(tr),
 			// add the breaker wrapper
 			client.Wrap(NewClientWrapper(b, false)),
 		)
@@ -66,37 +69,42 @@ func TestRateClientLimit(t *testing.T) {
 
 func TestRateServerLimit(t *testing.T) {
 	// setup
-	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
-
-	testRates := []int{1, 10, 20}
+	testRates := []int{1, 5, 6, 10}
 
 	for _, limit := range testRates {
-		b := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
-		c := client.NewClient(client.Selector(s))
+		r := rmemory.NewRegistry()
+		b := bmemory.NewBroker()
+		tr := tmemory.NewTransport()
+		_ = b
+		s := selector.NewSelector(selector.Registry(r))
+
+		br := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
+		c := client.NewClient(client.Selector(s), client.Transport(tr))
 
 		name := fmt.Sprintf("test.service.%d", limit)
 
-		s := server.NewServer(
+		srv := server.NewServer(
 			server.Name(name),
 			// add registry
 			server.Registry(r),
+			server.Transport(tr),
+			// add broker
+			//server.Broker(b),
 			// add the breaker wrapper
-			server.WrapHandler(NewHandlerWrapper(b, false)),
+			server.WrapHandler(NewHandlerWrapper(br, false)),
 		)
 
 		type Test struct {
 			*testHandler
 		}
 
-		s.Handle(
-			s.NewHandler(&Test{new(testHandler)}),
+		srv.Handle(
+			srv.NewHandler(&Test{new(testHandler)}),
 		)
 
-		if err := s.Start(); err != nil {
+		if err := srv.Start(); err != nil {
 			t.Fatalf("Unexpected error starting server: %v", err)
 		}
-
 		req := c.NewRequest(name, "Test.Method", &TestRequest{}, client.WithContentType("application/json"))
 		rsp := TestResponse{}
 
@@ -116,9 +124,9 @@ func TestRateServerLimit(t *testing.T) {
 			t.Fatalf("Expected rate limit error, got %v", err)
 		}
 
-		s.Stop()
+		srv.Stop()
 
 		// artificial test delay
-		time.Sleep(time.Millisecond * 20)
+		time.Sleep(500 * time.Millisecond)
 	}
 }

@@ -73,7 +73,11 @@ func TestRouter(t *testing.T) {
 
 	b, _ := json.Marshal(apiConfig)
 	m := memory.NewSource(memory.WithJSON(b))
-	conf := config.NewConfig(config.WithSource(m))
+	conf, err := config.NewConfig(config.WithSource(m))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	r := NewRouter(Config(conf))
 
 	wr := r.Handler()

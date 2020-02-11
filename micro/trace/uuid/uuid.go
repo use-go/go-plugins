@@ -15,7 +15,7 @@ func (u *uuidPlugin) Flags() []cli.Flag {
 	return nil
 }
 
-func (u *uuidPlugin) Commands() []cli.Command {
+func (u *uuidPlugin) Commands() []*cli.Command {
 	return nil
 }
 

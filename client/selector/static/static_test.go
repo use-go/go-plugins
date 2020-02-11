@@ -1,4 +1,4 @@
-package static_test
+package static
 
 import (
 	"fmt"

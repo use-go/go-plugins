@@ -20,7 +20,7 @@ func (x *awsXRay) Flags() []cli.Flag {
 	return nil
 }
 
-func (x *awsXRay) Commands() []cli.Command {
+func (x *awsXRay) Commands() []*cli.Command {
 	return nil
 }
 

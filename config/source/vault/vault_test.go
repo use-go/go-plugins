@@ -116,7 +116,10 @@ func TestVaultNewSource(t *testing.T) {
 		t.Skip()
 	}
 
-	conf := config.NewConfig()
+	conf, err := config.NewConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	_ = conf.Load(NewSource(
 		WithAddress("http://127.0.0.1"),

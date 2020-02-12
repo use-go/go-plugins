@@ -14,50 +14,42 @@ type ckv struct {
 	client  *api.Client
 }
 
-func (c *ckv) Read(keys ...string) ([]*store.Record, error) {
-	records := make([]*store.Record, 0, len(keys))
+func (c *ckv) Init(...store.Option) error {
+	return nil
+}
 
-	for _, key := range keys {
-		keyval, _, err := c.client.KV().Get(key, nil)
-		if err != nil {
-			return nil, err
-		}
+func (c *ckv) Read(key string, opts ...store.ReadOption) ([]*store.Record, error) {
+	// TODO: implement read options
+	records := make([]*store.Record, 0, 1)
 
-		if keyval == nil {
-			return nil, store.ErrNotFound
-		}
-
-		records = append(records, &store.Record{
-			Key:   keyval.Key,
-			Value: keyval.Value,
-		})
+	keyval, _, err := c.client.KV().Get(key, nil)
+	if err != nil {
+		return nil, err
 	}
+
+	if keyval == nil {
+		return nil, store.ErrNotFound
+	}
+
+	records = append(records, &store.Record{
+		Key:   keyval.Key,
+		Value: keyval.Value,
+	})
 
 	return records, nil
 }
 
-func (c *ckv) Delete(keys ...string) error {
-	var err error
-	for _, key := range keys {
-		if _, err = c.client.KV().Delete(key, nil); err != nil {
-			return err
-		}
-	}
-	return nil
+func (c *ckv) Delete(key string) error {
+	_, err := c.client.KV().Delete(key, nil)
+	return err
 }
 
-func (c *ckv) Write(records ...*store.Record) error {
-	var err error
-	for _, record := range records {
-		_, err = c.client.KV().Put(&api.KVPair{
-			Key:   record.Key,
-			Value: record.Value,
-		}, nil)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func (c *ckv) Write(record *store.Record) error {
+	_, err := c.client.KV().Put(&api.KVPair{
+		Key:   record.Key,
+		Value: record.Value,
+	}, nil)
+	return err
 }
 
 func (c *ckv) List() ([]*store.Record, error) {

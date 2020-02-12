@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -17,6 +18,9 @@ var (
 )
 
 func TestWrite(t *testing.T) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		t.Skip()
+	}
 	err := sqlStoreT.Write(
 		&store.Record{
 			Key:    "test",
@@ -30,6 +34,9 @@ func TestWrite(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		t.Skip()
+	}
 	err := sqlStoreT.Delete("test")
 	if err != nil {
 		t.Error(err)
@@ -37,6 +44,9 @@ func TestDelete(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		t.Skip()
+	}
 	records, err := sqlStoreT.Read("test")
 	if err != nil {
 		t.Error(err)
@@ -46,6 +56,9 @@ func TestRead(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		t.Skip()
+	}
 	records, err := sqlStoreT.List()
 	if err != nil {
 		t.Error(err)

@@ -2,6 +2,7 @@ package rabbitmq_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	micro "github.com/micro/go-micro/v2"
@@ -13,11 +14,13 @@ import (
 type Example struct{}
 
 func (e *Example) Handler(ctx context.Context, r interface{}) error {
-	panic("TE")
 	return nil
 }
 
 func TestDurable(t *testing.T) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		t.Skip()
+	}
 	rabbitmq.DefaultRabbitURL = "amqp://rabbitmq:rabbitmq@172.18.0.2:5672"
 	brkrSub := broker.NewSubscribeOptions(
 		broker.Queue("queue.default"),

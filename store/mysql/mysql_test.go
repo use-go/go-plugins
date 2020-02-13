@@ -11,16 +11,22 @@ import (
 )
 
 var (
+	sqlStoreT store.Store
+)
+
+func TestMain(m *testing.M) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		os.Exit(0)
+	}
+
 	sqlStoreT = NewStore(
 		store.Namespace("testMicro"),
 		store.Nodes("root:123@(127.0.0.1:3306)/test?charset=utf8&parseTime=true&loc=Asia%2FShanghai"),
 	)
-)
+	os.Exit(m.Run())
+}
 
 func TestWrite(t *testing.T) {
-	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
-		t.Skip()
-	}
 	err := sqlStoreT.Write(
 		&store.Record{
 			Key:    "test",
@@ -34,9 +40,6 @@ func TestWrite(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
-		t.Skip()
-	}
 	err := sqlStoreT.Delete("test")
 	if err != nil {
 		t.Error(err)
@@ -44,9 +47,6 @@ func TestDelete(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
-		t.Skip()
-	}
 	records, err := sqlStoreT.Read("test")
 	if err != nil {
 		t.Error(err)
@@ -56,9 +56,6 @@ func TestRead(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
-		t.Skip()
-	}
 	records, err := sqlStoreT.List()
 	if err != nil {
 		t.Error(err)

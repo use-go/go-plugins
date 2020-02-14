@@ -30,12 +30,21 @@ func TestRoutes(t *testing.T) {
 					},
 					Weight: 1.0,
 				},
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "bif.com",
+						Path:   "/bif",
+					},
+					Weight: 2.0,
+					Type:   "proxy",
+				},
 			},
 			Req: &http.Request{
 				Method: "GET",
 				Host:   "example.com",
 				URL: &url.URL{
-					Path: "/",
+					Path: "/bif",
 				},
 			},
 			Match: true,
@@ -58,12 +67,95 @@ func TestRoutes(t *testing.T) {
 					},
 					Weight: 1.0,
 				},
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "bif.com",
+						Path:   "/bif",
+					},
+					Weight: 2.0,
+					Type:   "proxy",
+				},
 			},
 			Req: &http.Request{
 				Method: "POST",
 				Host:   "foo.com",
 				URL: &url.URL{
 					Path: "/bar",
+				},
+			},
+			Match: true,
+		},
+		{
+			Routes: []Route{
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "example.com",
+						Path:   "/",
+					},
+					Weight: 1.0,
+				},
+				{
+					Request: Request{
+						Method: "POST",
+						Host:   "foo.com",
+						Path:   "/bar",
+					},
+					Weight: 1.0,
+				},
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "bif.com",
+						Path:   "/bif",
+					},
+					Weight: 2.0,
+					Type:   "proxy",
+				},
+			},
+			Req: &http.Request{
+				Method: "GET",
+				Host:   "bif.com",
+				URL: &url.URL{
+					Path: "/bif",
+				},
+			},
+			Match: true,
+		},
+		{
+			Routes: []Route{
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "example.com",
+						Path:   "/",
+					},
+					Weight: 1.0,
+				},
+				{
+					Request: Request{
+						Method: "POST",
+						Host:   "foo.com",
+						Path:   "/bar",
+					},
+					Weight: 1.0,
+				},
+				{
+					Request: Request{
+						Method: "GET",
+						Host:   "bif.com",
+						Path:   "/bif",
+					},
+					Weight: 2.0,
+					Type:   "proxy",
+				},
+			},
+			Req: &http.Request{
+				Method: "GET",
+				Host:   "bif.com",
+				URL: &url.URL{
+					Path: "/bif/bam",
 				},
 			},
 			Match: true,

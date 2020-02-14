@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 	"time"
 )
 
@@ -63,7 +64,7 @@ func (r Route) Match(req *http.Request) bool {
 	rq := r.Request
 
 	// first level match, quick and dirty
-	if (rq.Method == req.Method) && (rq.Host == req.Host) && (rq.Path == req.URL.Path) {
+	if (rq.Method == req.Method) && (rq.Host == req.Host) && strings.HasPrefix(req.URL.Path, rq.Path) {
 		// skip
 	} else {
 		return false

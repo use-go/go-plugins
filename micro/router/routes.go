@@ -1,6 +1,7 @@
 package router
 
 import (
+	"crypto/tls"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -23,6 +24,7 @@ type Route struct {
 	Priority int      `json:"priority"` // 0 is highest. Used for ordering routes
 	Weight   float64  `json:"weight"`   // percentage weight between 0 and 1.0
 	Type     string   `json:"type"`     // proxy or response. Response is default
+	Insecure bool     `json:"bool"`     // allow insecure certificates
 }
 
 // Request describes the expected request and will
@@ -104,9 +106,16 @@ func (r Route) Write(w http.ResponseWriter, req *http.Request) {
 			Director: func(rr *http.Request) {
 				rr.URL.Host = r.ProxyURL.Host
 				rr.URL.Scheme = r.ProxyURL.Scheme
-				rr.URL.Path = r.ProxyURL.Path
+				rr.URL.Path = strings.Replace(rr.URL.Path, r.Request.Path, r.ProxyURL.Path, 1)
 				rr.Host = r.ProxyURL.Host
 			},
+		}
+		if r.Insecure {
+			p.Transport = &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			}
 		}
 		p.ServeHTTP(w, req)
 		return

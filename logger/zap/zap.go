@@ -14,13 +14,20 @@ type zaplog struct {
 	zap *zap.Logger
 }
 
-func (l *zaplog) Fields(fields ...logger.Field) logger.Logger {
+func (l *zaplog) Fields(fields map[string]interface{}) logger.Logger {
 	data := make([]zap.Field, len(fields))
-	for _, f := range fields {
-		data = append(data, zap.Any(f.Key, f.GetValue()))
+	for k, v := range fields {
+		data = append(data, zap.Any(k, v))
 	}
 
 	return &zaplog{cfg: l.cfg, zap: l.zap.With(data...)}
+}
+
+func (l *zaplog) Error(err error) logger.Logger {
+	return &zaplog{
+		cfg: l.cfg,
+		zap: l.zap.With(zap.Error(err)),
+	}
 }
 
 func (l *zaplog) Init(opts ...logger.Option) error {

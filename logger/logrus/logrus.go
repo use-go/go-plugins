@@ -21,15 +21,14 @@ type logger struct {
 	*logrus.Logger
 }
 
-func (l *logger) Fields(fields ...log.Field) log.Logger {
-	data := make(logrus.Fields, len(fields))
-	for _, f := range fields {
-		data[f.Key] = f.GetValue()
-	}
-
+func (l *logger) Fields(fields map[string]interface{}) log.Logger {
 	// shall we need pool here?
 	// but logrus already has pool for its entry.
-	return &logger{logrus.WithFields(data).Logger}
+	return &logger{logrus.WithFields(fields).Logger}
+}
+
+func (l *logger) Error(err error) log.Logger {
+	return &logger{logrus.WithError(err).Logger}
 }
 
 func (l *logger) Init(opts ...log.Option) error {

@@ -1,4 +1,4 @@
-package zero
+package zerolog
 
 import (
 	"context"
@@ -36,12 +36,6 @@ func WithProductionMode() logger.Option {
 	return setOption(productionModeKey{}, true)
 }
 
-type gcpModeKey struct{}
-
-func WithGCPMode() logger.Option {
-	return setOption(gcpModeKey{}, true)
-}
-
 type outKey struct{}
 
 func WithOut(out io.Writer) logger.Option {
@@ -50,7 +44,7 @@ func WithOut(out io.Writer) logger.Option {
 
 type fieldsKey struct{}
 
-func WithFields(fields ...logger.Field) logger.Option {
+func WithFields(fields map[string]interface{}) logger.Option {
 	return setOption(fieldsKey{}, fields)
 }
 

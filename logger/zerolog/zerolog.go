@@ -1,4 +1,4 @@
-package zero
+package zerolog
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
-	"time"
 
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/rs/zerolog"
@@ -19,7 +18,6 @@ type Mode uint8
 const (
 	Production Mode = iota + 1
 	Development
-	GCP
 )
 
 var (
@@ -34,7 +32,7 @@ var (
 	// The logging level the logger should log at.
 	// This defaults to 100 means not explicitly set by user
 	level      logger.Level = 100
-	fields     []logger.Field
+	fields     map[string]interface{}
 	hooks      []zerolog.Hook
 	timeFormat string
 	// default Production (1)
@@ -45,12 +43,8 @@ type zeroLogger struct {
 	nativelogger zerolog.Logger
 }
 
-func (l *zeroLogger) Fields(fields ...logger.Field) logger.Logger {
-	data := make(map[string]interface{}, len(fields))
-	for _, f := range fields {
-		data[f.Key] = f.GetValue()
-	}
-	return &zeroLogger{l.nativelogger.With().Fields(data).Logger()}
+func (l *zeroLogger) Fields(fields map[string]interface{}) logger.Logger {
+	return &zeroLogger{l.nativelogger.With().Fields(fields).Logger()}
 }
 
 func (l *zeroLogger) Error(err error) logger.Logger {
@@ -72,7 +66,7 @@ func (l *zeroLogger) Init(opts ...logger.Option) error {
 	if hs, ok := options.Context.Value(hooksKey{}).([]zerolog.Hook); ok {
 		hooks = hs
 	}
-	if flds, ok := options.Context.Value(fieldsKey{}).([]logger.Field); ok {
+	if flds, ok := options.Context.Value(fieldsKey{}).(map[string]interface{}); ok {
 		fields = flds
 	}
 	if lvl, ok := options.Context.Value(levelKey{}).(logger.Level); ok {
@@ -96,9 +90,6 @@ func (l *zeroLogger) Init(opts ...logger.Option) error {
 	if prodMode, ok := options.Context.Value(productionModeKey{}).(bool); ok && prodMode {
 		mode = Production
 	}
-	if gcpMode, ok := options.Context.Value(gcpModeKey{}).(bool); ok && gcpMode {
-		mode = GCP
-	}
 
 	switch mode {
 	case Development:
@@ -108,7 +99,9 @@ func (l *zeroLogger) Init(opts ...logger.Option) error {
 		}
 		consOut := zerolog.NewConsoleWriter(
 			func(w *zerolog.ConsoleWriter) {
-				w.TimeFormat = time.RFC3339
+				if len(timeFormat) > 0 {
+					w.TimeFormat = timeFormat
+				}
 				w.Out = out
 				w.NoColor = false
 			},
@@ -116,16 +109,6 @@ func (l *zeroLogger) Init(opts ...logger.Option) error {
 		level = logger.DebugLevel
 		l.nativelogger = zerolog.New(consOut).
 			Level(zerolog.DebugLevel).
-			With().Timestamp().Stack().Logger()
-	case GCP:
-		zerolog.LevelFieldName = "severity"
-		zerolog.TimestampFieldName = "timestamp"
-		timeFormat = time.RFC3339Nano
-		// Adds stackdriver severity hook
-		hooks = append(hooks, stackdriverSeverityHook{})
-
-		l.nativelogger = zerolog.New(out).
-			Level(zerolog.InfoLevel).
 			With().Timestamp().Stack().Logger()
 	default: // Production
 		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
@@ -160,14 +143,10 @@ func (l *zeroLogger) Init(opts ...logger.Option) error {
 
 	// Adding seed fields if exist
 	if fields != nil {
-		data := make(map[string]interface{}, len(fields))
-		for _, f := range fields {
-			data[f.Key] = f.GetValue()
-		}
-		l.nativelogger = l.nativelogger.With().Fields(data).Logger()
+		l.nativelogger = l.nativelogger.With().Fields(fields).Logger()
 	}
 
-	// Also set it as Default zerolog logger
+	// Also set it as zerolog's Default logger
 	if useAsDefault {
 		zlog.Logger = l.nativelogger
 	}

@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -10,11 +11,20 @@ import (
 )
 
 var (
+	sqlStoreT store.Store
+)
+
+func TestMain(m *testing.M) {
+	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
+		os.Exit(0)
+	}
+
 	sqlStoreT = NewStore(
 		store.Namespace("testMicro"),
 		store.Nodes("root:123@(127.0.0.1:3306)/test?charset=utf8&parseTime=true&loc=Asia%2FShanghai"),
 	)
-)
+	os.Exit(m.Run())
+}
 
 func TestWrite(t *testing.T) {
 	err := sqlStoreT.Write(

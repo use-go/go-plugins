@@ -20,47 +20,44 @@ func TestName(t *testing.T) {
 	t.Logf("testing logger name: %s", l.String())
 }
 
-// func ExampleWithOut() {
-// 	l := NewLogger(WithOut(os.Stdout), WithProductionMode())
+func TestWithOutput(t *testing.T) {
+	logger.DefaultLogger = NewLogger(logger.WithOutput(os.Stdout))
 
-// 	l.Logf(logger.InfoLevel, "testing: %s", "logf")
-
-// 	// Output:
-// 	// {"level":"info","time":"2020-02-14T22:15:36-08:00","message":"testing: logf"}
-// }
+	logger.Logf(logger.InfoLevel, "testing: %s", "WithOutput")
+}
 
 func TestSetLevel(t *testing.T) {
-	l := NewLogger()
+	logger.DefaultLogger = NewLogger()
 
-	l.SetLevel(logger.DebugLevel)
-	l.Logf(logger.DebugLevel, "test show debug: %s", "debug msg")
+	logger.Init(logger.WithLevel(logger.DebugLevel))
+	logger.Logf(logger.DebugLevel, "test show debug: %s", "debug msg")
 
-	l.SetLevel(logger.InfoLevel)
-	l.Logf(logger.DebugLevel, "test non-show debug: %s", "debug msg")
+	logger.Init(logger.WithLevel(logger.InfoLevel))
+	logger.Logf(logger.DebugLevel, "test non-show debug: %s", "debug msg")
 }
 
 func TestWithReportCaller(t *testing.T) {
-	l := NewLogger(ReportCaller())
+	logger.DefaultLogger = NewLogger(ReportCaller())
 
-	l.Logf(logger.InfoLevel, "testing: %s", "WithReportCaller")
+	logger.Logf(logger.InfoLevel, "testing: %s", "WithReportCaller")
 }
 
 func TestWithOut(t *testing.T) {
-	l := NewLogger(WithOut(os.Stdout))
+	logger.DefaultLogger = NewLogger(logger.WithOutput(os.Stdout))
 
-	l.Logf(logger.InfoLevel, "testing: %s", "WithOut")
+	logger.Logf(logger.InfoLevel, "testing: %s", "WithOut")
 }
 
 func TestWithDevelopmentMode(t *testing.T) {
-	l := NewLogger(WithDevelopmentMode(), WithTimeFormat(time.Kitchen))
+	logger.DefaultLogger = NewLogger(WithDevelopmentMode(), WithTimeFormat(time.Kitchen))
 
-	l.Logf(logger.InfoLevel, "testing: %s", "DevelopmentMode")
+	logger.Logf(logger.InfoLevel, "testing: %s", "DevelopmentMode")
 }
 
 func TestWithFields(t *testing.T) {
-	l := NewLogger()
+	logger.DefaultLogger = NewLogger()
 
-	l.Fields(map[string]interface{}{
+	logger.Fields(map[string]interface{}{
 		"sumo":  "demo",
 		"human": true,
 		"age":   99,
@@ -68,9 +65,9 @@ func TestWithFields(t *testing.T) {
 }
 
 func TestWithError(t *testing.T) {
-	l := NewLogger()
+	logger.DefaultLogger = NewLogger()
 
-	l.Error(errors.New("I am Error")).Logf(logger.ErrorLevel, "testing: %s", "WithError")
+	logger.WithError(errors.New("I am Error")).Logf(logger.ErrorLevel, "testing: %s", "WithError")
 }
 
 func TestWithHooks(t *testing.T) {
@@ -79,7 +76,7 @@ func TestWithHooks(t *testing.T) {
 		e.Str("test", "logged")
 	})
 
-	l := NewLogger(WithHooks([]zerolog.Hook{simpleHook}))
+	logger.DefaultLogger = NewLogger(WithHooks([]zerolog.Hook{simpleHook}))
 
-	l.Logf(logger.InfoLevel, "testing: %s", "WithHooks")
+	logger.Logf(logger.InfoLevel, "testing: %s", "WithHooks")
 }

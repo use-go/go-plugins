@@ -1,9 +1,10 @@
 package zap
 
 import (
-	"github.com/micro/go-micro/v2/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/micro/go-micro/v2/logger"
 )
 
 type Options struct {
@@ -14,19 +15,18 @@ type configKey struct{}
 
 // WithConfig pass zap.Config to logger
 func WithConfig(c zap.Config) logger.Option {
-	return setOption(configKey{}, c)
+	return logger.SetOption(configKey{}, c)
 }
 
 type encoderConfigKey struct{}
 
 // WithEncoderConfig pass zapcore.EncoderConfig to logger
 func WithEncoderConfig(c zapcore.EncoderConfig) logger.Option {
-	return setOption(encoderConfigKey{}, c)
+	return logger.SetOption(encoderConfigKey{}, c)
 }
 
-type levelKey struct{}
+type namespaceKey struct{}
 
-// WithLevel pass log level
-func WithLevel(l logger.Level) logger.Option {
-	return setOption(levelKey{}, l)
+func WithNamespace(namespace string) logger.Option {
+	return logger.SetOption(namespaceKey{}, namespace)
 }

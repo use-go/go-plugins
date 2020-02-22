@@ -19,13 +19,14 @@ jobs:
 
     - name: Get dependencies
       run: |
-        go get -v -t -d ./...
+        ./.travis/dep.sh
 
     - name: Run tests
       id: tests
       env:
+	GOMODULE111: ON
         IN_TRAVIS_CI: yes
-      run: go test -v ./...
+      run: ./.travis/tests.sh
   
     - name: Notify of test failure
       if: failure()

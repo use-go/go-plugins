@@ -19,7 +19,7 @@ jobs:
 
     - name: Get dependencies
       run: |
-        ./.travis/dep.sh
+        ./.travis/deps.sh
 
     - name: Run tests
       id: tests

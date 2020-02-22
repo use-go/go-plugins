@@ -24,7 +24,6 @@ jobs:
     - name: Run tests
       id: tests
       env:
-	GOMODULE111: on
         IN_TRAVIS_CI: yes
       run: ./.travis/tests.sh
   

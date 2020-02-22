@@ -25,6 +25,7 @@ jobs:
       id: tests
       env:
         IN_TRAVIS_CI: yes
+        TRAVIS: yes
       run: ./.travis/tests.sh
   
     - name: Notify of test failure

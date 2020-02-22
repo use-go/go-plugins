@@ -13,6 +13,10 @@ func TestGeocode(t *testing.T) {
 	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
 		return
 	}
+	// skip on travis
+	if tr := os.Getenv("IN_TRAVIS_CI"); len(tr) > 0 {
+		return
+	}
 
 	testData := []struct {
 		address  string

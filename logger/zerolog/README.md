@@ -6,11 +6,11 @@
 
 ```go
 func ExampleWithOut() {
-  logger.DefaultLogger = zerolog.NewLogger(logger.WithOut(os.Stdout), logger.WithLevel(logger.DebugLevel))
+  logger.DefaultLogger = zerolog.NewLogger(logger.WithOutput(os.Stdout), logger.WithLevel(logger.DebugLevel))
 
-  logger.Logf(logger.InfoLevel, "testing: %s", "logf")
+  logger.Infof(logger.InfoLevel, "testing: %s", "Infof")
 
   // Output:
-  // {"level":"info","message":"testing: logf"}
+  // {"level":"info","message":"testing: Infof"}
 }
 ```

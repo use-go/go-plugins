@@ -184,8 +184,6 @@ func loggerToZerologLevel(level logger.Level) zerolog.Level {
 		return zerolog.WarnLevel
 	case logger.ErrorLevel:
 		return zerolog.ErrorLevel
-	case logger.PanicLevel:
-		return zerolog.PanicLevel
 	case logger.FatalLevel:
 		return zerolog.FatalLevel
 	default:
@@ -205,8 +203,6 @@ func ZerologToLoggerLevel(level zerolog.Level) logger.Level {
 		return logger.WarnLevel
 	case zerolog.ErrorLevel:
 		return logger.ErrorLevel
-	case zerolog.PanicLevel:
-		return logger.PanicLevel
 	case zerolog.FatalLevel:
 		return logger.FatalLevel
 	default:

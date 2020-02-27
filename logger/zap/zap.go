@@ -93,8 +93,6 @@ func (l *zaplog) Log(level logger.Level, args ...interface{}) {
 		l.zap.Warn(msg)
 	case zap.ErrorLevel:
 		l.zap.Error(msg)
-	case zap.PanicLevel:
-		l.zap.Panic(msg)
 	case zap.FatalLevel:
 		l.zap.Fatal(msg)
 	}
@@ -112,8 +110,6 @@ func (l *zaplog) Logf(level logger.Level, format string, args ...interface{}) {
 		l.zap.Warn(msg)
 	case zap.ErrorLevel:
 		l.zap.Error(msg)
-	case zap.PanicLevel:
-		l.zap.Panic(msg)
 	case zap.FatalLevel:
 		l.zap.Fatal(msg)
 	}
@@ -155,8 +151,6 @@ func loggerToZapLevel(level logger.Level) zapcore.Level {
 		return zap.WarnLevel
 	case logger.ErrorLevel:
 		return zap.ErrorLevel
-	case logger.PanicLevel:
-		return zap.PanicLevel
 	case logger.FatalLevel:
 		return zap.FatalLevel
 	default:
@@ -174,8 +168,6 @@ func zapToLoggerLevel(level zapcore.Level) logger.Level {
 		return logger.WarnLevel
 	case zap.ErrorLevel:
 		return logger.ErrorLevel
-	case zap.PanicLevel:
-		return logger.PanicLevel
 	case zap.FatalLevel:
 		return logger.FatalLevel
 	default:

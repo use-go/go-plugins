@@ -103,8 +103,6 @@ func loggerToLogrusLevel(level logger.Level) logrus.Level {
 		return logrus.WarnLevel
 	case logger.ErrorLevel:
 		return logrus.ErrorLevel
-	case logger.PanicLevel:
-		return logrus.PanicLevel
 	case logger.FatalLevel:
 		return logrus.FatalLevel
 	default:
@@ -124,8 +122,6 @@ func logrusToLoggerLevel(level logrus.Level) logger.Level {
 		return logger.WarnLevel
 	case logrus.ErrorLevel:
 		return logger.ErrorLevel
-	case logrus.PanicLevel:
-		return logger.PanicLevel
 	case logrus.FatalLevel:
 		return logger.FatalLevel
 	default:

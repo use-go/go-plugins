@@ -68,7 +68,7 @@ func (l *zaplog) Init(opts ...logger.Option) error {
 }
 
 func (l *zaplog) Fields(fields map[string]interface{}) logger.Logger {
-	data := make([]zap.Field, len(fields))
+	data := make([]zap.Field, 0, len(fields))
 	for k, v := range fields {
 		data = append(data, zap.Any(k, v))
 	}

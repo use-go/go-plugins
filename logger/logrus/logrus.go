@@ -32,14 +32,19 @@ func (l *logrusLogger) Init(opts ...logger.Option) error {
 		l.opts.ExitFunc = exitFunction
 	}
 
-	l.Logger = &logrus.Logger{
-		Out:          l.opts.Out,
-		Formatter:    l.opts.Formatter,
-		Hooks:        l.opts.Hooks,
-		Level:        loggerToLogrusLevel(l.opts.Level),
-		ExitFunc:     l.opts.ExitFunc,
-		ReportCaller: l.opts.ReportCaller,
+	log := logrus.New() // defaults
+	if ll, ok := l.opts.Context.Value(logrusLoggerKey{}).(*logrus.Logger); ok {
+		log = ll
 	}
+
+	log.SetOutput(l.opts.Out)
+	log.SetFormatter(l.opts.Formatter)
+	log.ReplaceHooks(l.opts.Hooks)
+	log.SetLevel(loggerToLogrusLevel(l.opts.Level))
+	log.ExitFunc = l.opts.ExitFunc
+	log.SetReportCaller(l.opts.ReportCaller)
+
+	l.Logger = log
 
 	return nil
 }

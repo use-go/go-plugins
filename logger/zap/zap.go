@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -15,6 +16,8 @@ type zaplog struct {
 	cfg  zap.Config
 	zap  *zap.Logger
 	opts logger.Options
+	sync.RWMutex
+	fields map[string]interface{}
 }
 
 func (l *zaplog) Init(opts ...logger.Option) error {
@@ -34,13 +37,18 @@ func (l *zaplog) Init(opts ...logger.Option) error {
 
 	}
 
+	skip, ok := l.opts.Context.Value(callerSkipKey{}).(int)
+	if !ok || skip < 1 {
+		skip = 1
+	}
+
 	// Set log Level if not default
 	zapConfig.Level = zap.NewAtomicLevel()
 	if l.opts.Level != logger.InfoLevel {
 		zapConfig.Level.SetLevel(loggerToZapLevel(l.opts.Level))
 	}
 
-	log, err := zapConfig.Build()
+	log, err := zapConfig.Build(zap.AddCallerSkip(skip))
 	if err != nil {
 		return err
 	}
@@ -63,55 +71,75 @@ func (l *zaplog) Init(opts ...logger.Option) error {
 
 	l.cfg = zapConfig
 	l.zap = log
+	l.fields = make(map[string]interface{})
 
 	return nil
 }
 
 func (l *zaplog) Fields(fields map[string]interface{}) logger.Logger {
-	data := make([]zap.Field, 0, len(fields))
+	l.Lock()
+	l.fields = make(map[string]interface{}, len(fields))
 	for k, v := range fields {
-		data = append(data, zap.Any(k, v))
+		l.fields[k] = v
 	}
-	l.zap = l.zap.With(data...)
+	l.Unlock()
+
 	return l
 }
 
 func (l *zaplog) Error(err error) logger.Logger {
-	l.zap = l.zap.With(zap.Error(err))
+	l.Lock()
+	l.fields["error"] = err
+	l.Unlock()
+
 	return l
 }
 
 func (l *zaplog) Log(level logger.Level, args ...interface{}) {
+	l.RLock()
+	data := make([]zap.Field, 0, len(l.fields))
+	for k, v := range l.fields {
+		data = append(data, zap.Any(k, v))
+	}
+	l.RUnlock()
+
 	lvl := loggerToZapLevel(level)
 	msg := fmt.Sprint(args...)
 	switch lvl {
 	case zap.DebugLevel:
-		l.zap.Debug(msg)
+		l.zap.Debug(msg, data...)
 	case zap.InfoLevel:
-		l.zap.Info(msg)
+		l.zap.Info(msg, data...)
 	case zap.WarnLevel:
-		l.zap.Warn(msg)
+		l.zap.Warn(msg, data...)
 	case zap.ErrorLevel:
-		l.zap.Error(msg)
+		l.zap.Error(msg, data...)
 	case zap.FatalLevel:
-		l.zap.Fatal(msg)
+		l.zap.Fatal(msg, data...)
 	}
 }
 
 func (l *zaplog) Logf(level logger.Level, format string, args ...interface{}) {
+	l.RLock()
+	data := make([]zap.Field, 0, len(l.fields))
+	for k, v := range l.fields {
+		data = append(data, zap.Any(k, v))
+	}
+	l.RUnlock()
+
 	lvl := loggerToZapLevel(level)
 	msg := fmt.Sprintf(format, args...)
 	switch lvl {
 	case zap.DebugLevel:
-		l.zap.Debug(msg)
+		l.zap.Debug(msg, data...)
 	case zap.InfoLevel:
-		l.zap.Info(msg)
+		l.zap.Info(msg, data...)
 	case zap.WarnLevel:
-		l.zap.Warn(msg)
+		l.zap.Warn(msg, data...)
 	case zap.ErrorLevel:
-		l.zap.Error(msg)
+		l.zap.Error(msg, data...)
 	case zap.FatalLevel:
-		l.zap.Fatal(msg)
+		l.zap.Fatal(msg, data...)
 	}
 }
 

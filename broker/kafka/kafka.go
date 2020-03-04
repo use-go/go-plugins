@@ -198,13 +198,14 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 				}
 			default:
 				err := cg.Consume(ctx, topics, h)
-				if err != nil {
+				switch err {
+				case sarama.ErrClosedConsumerGroup:
+					return
+				case nil:
+					continue
+				default:
 					log.Error(err)
 				}
-				if err == sarama.ErrClosedConsumerGroup {
-					return
-				}
-
 			}
 		}
 	}()

@@ -78,21 +78,32 @@ func (l *zaplog) Init(opts ...logger.Option) error {
 
 func (l *zaplog) Fields(fields map[string]interface{}) logger.Logger {
 	l.Lock()
-	l.fields = make(map[string]interface{}, len(fields))
-	for k, v := range fields {
-		l.fields[k] = v
+	nfields := make(map[string]interface{}, len(l.fields))
+	for k, v := range l.fields {
+		nfields[k] = v
 	}
 	l.Unlock()
+	for k, v := range fields {
+		nfields[k] = v
+	}
 
-	return l
+	data := make([]zap.Field, 0, len(nfields))
+	for k, v := range fields {
+		data = append(data, zap.Any(k, v))
+	}
+
+	zl := &zaplog{
+		cfg:    l.cfg,
+		zap:    l.zap.With(data...),
+		opts:   l.opts,
+		fields: make(map[string]interface{}),
+	}
+
+	return zl
 }
 
 func (l *zaplog) Error(err error) logger.Logger {
-	l.Lock()
-	l.fields["error"] = err
-	l.Unlock()
-
-	return l
+	return l.Fields(map[string]interface{}{"error": err})
 }
 
 func (l *zaplog) Log(level logger.Level, args ...interface{}) {

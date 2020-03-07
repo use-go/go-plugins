@@ -2,6 +2,7 @@ package logrus
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -9,9 +10,17 @@ import (
 	"github.com/micro/go-micro/v2/logger"
 )
 
+type entryLogger interface {
+	WithFields(fields logrus.Fields) *logrus.Entry
+	WithError(err error) *logrus.Entry
+
+	Log(level logrus.Level, args ...interface{})
+	Logf(level logrus.Level, format string, args ...interface{})
+}
+
 type logrusLogger struct {
-	*logrus.Logger
-	opts Options
+	Logger entryLogger
+	opts   Options
 }
 
 func (l *logrusLogger) Init(opts ...logger.Option) error {
@@ -32,19 +41,38 @@ func (l *logrusLogger) Init(opts ...logger.Option) error {
 		l.opts.ExitFunc = exitFunction
 	}
 
-	log := logrus.New() // defaults
-	if ll, ok := l.opts.Context.Value(logrusLoggerKey{}).(*logrus.Logger); ok {
-		log = ll
+	switch ll := l.opts.Context.Value(logrusLoggerKey{}).(type) {
+	case *logrus.Logger:
+		// overwrite default options
+		l.opts.Level = logrusToLoggerLevel(ll.GetLevel())
+		l.opts.Out = ll.Out
+		l.opts.Formatter = ll.Formatter
+		l.opts.Hooks = ll.Hooks
+		l.opts.ReportCaller = ll.ReportCaller
+		l.opts.ExitFunc = ll.ExitFunc
+		l.Logger = ll
+	case *logrus.Entry:
+		// overwrite default options
+		el := ll.Logger
+		l.opts.Level = logrusToLoggerLevel(el.GetLevel())
+		l.opts.Out = el.Out
+		l.opts.Formatter = el.Formatter
+		l.opts.Hooks = el.Hooks
+		l.opts.ReportCaller = el.ReportCaller
+		l.opts.ExitFunc = el.ExitFunc
+		l.Logger = ll
+	case nil:
+		log := logrus.New() // defaults
+		log.SetLevel(loggerToLogrusLevel(l.opts.Level))
+		log.SetOutput(l.opts.Out)
+		log.SetFormatter(l.opts.Formatter)
+		log.ReplaceHooks(l.opts.Hooks)
+		log.SetReportCaller(l.opts.ReportCaller)
+		log.ExitFunc = l.opts.ExitFunc
+		l.Logger = log
+	default:
+		return fmt.Errorf("invalid logrus type: %T", ll)
 	}
-
-	log.SetOutput(l.opts.Out)
-	log.SetFormatter(l.opts.Formatter)
-	log.ReplaceHooks(l.opts.Hooks)
-	log.SetLevel(loggerToLogrusLevel(l.opts.Level))
-	log.ExitFunc = l.opts.ExitFunc
-	log.SetReportCaller(l.opts.ReportCaller)
-
-	l.Logger = log
 
 	return nil
 }
@@ -54,13 +82,11 @@ func (l *logrusLogger) String() string {
 }
 
 func (l *logrusLogger) Fields(fields map[string]interface{}) logger.Logger {
-	// shall we need pool here?
-	// but logrus already has pool for its entry.
-	return &logrusLogger{logrus.WithFields(fields).Logger, l.opts}
+	return &logrusLogger{l.Logger.WithFields(fields), l.opts}
 }
 
 func (l *logrusLogger) Error(err error) logger.Logger {
-	return &logrusLogger{logrus.WithError(err).Logger, l.opts}
+	return &logrusLogger{l.Logger.WithError(err), l.opts}
 }
 
 func (l *logrusLogger) Log(level logger.Level, args ...interface{}) {

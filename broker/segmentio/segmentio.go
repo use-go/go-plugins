@@ -21,7 +21,6 @@ type kBroker struct {
 	writerConfig kafka.WriterConfig
 
 	writers map[string]*kafka.Writer
-	readers map[string]*kafka.Reader
 
 	connected bool
 	sync.RWMutex
@@ -128,11 +127,6 @@ func (k *kBroker) Disconnect() error {
 
 	k.Lock()
 	defer k.Unlock()
-	for _, reader := range k.readers {
-		if err := reader.Close(); err != nil {
-			return err
-		}
-	}
 	for _, writer := range k.writers {
 		if err := writer.Close(); err != nil {
 			return err
@@ -214,17 +208,20 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 
 	sub := &subscriber{group: group, opts: opt, t: topic}
 
+	chErr := make(chan error)
+
 	go func() {
 		for {
 			gen, err := group.Next(k.opts.Context)
 			if err == kafka.ErrGroupClosed {
+				chErr <- nil
 				return
 			} else if err != nil {
-				if logger.V(logger.ErrorLevel, logger.DefaultLogger) {
-					logger.Errorf("[kafka] subscribe error: %v", err)
-				}
+				chErr <- err
 				return
 			}
+			chErr <- nil
+
 			assignments := gen.Assignments[topic]
 			for _, assignment := range assignments {
 				partition, offset := assignment.ID, assignment.Offset
@@ -233,12 +230,10 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 
 				gen.Start(func(ctx context.Context) {
 					// create reader for this partition.
-					reader := kafka.NewReader(kafka.ReaderConfig{
-						//GroupID: gen.GroupID,
-						Brokers:   gcfg.Brokers,
-						Topic:     topic,
-						Partition: partition,
-					})
+					cfg := k.readerConfig
+					cfg.Topic = topic
+					cfg.Partition = partition
+					reader := kafka.NewReader(cfg)
 					defer reader.Close()
 					// seek to the last committed offset for this partition.
 					reader.SetOffset(offset)
@@ -289,6 +284,11 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 		}
 	}()
 
+	err = <-chErr
+	if err != nil {
+		return nil, err
+	}
+
 	return sub, nil
 }
 
@@ -327,7 +327,7 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 	}
 	readerConfig.WatchPartitionChanges = true
 
-	writerConfig := kafka.WriterConfig{}
+	writerConfig := kafka.WriterConfig{CompressionCodec: nil}
 	if cfg, ok := options.Context.Value(writerConfigKey{}).(kafka.WriterConfig); ok {
 		writerConfig = cfg
 	}
@@ -340,7 +340,6 @@ func NewBroker(opts ...broker.Option) broker.Broker {
 		readerConfig: readerConfig,
 		writerConfig: writerConfig,
 		writers:      make(map[string]*kafka.Writer),
-		readers:      make(map[string]*kafka.Reader),
 		addrs:        cAddrs,
 		opts:         options,
 	}

@@ -11,11 +11,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// DefaultNamespace is the namespace that the sql store
-// will use if no namespace is provided.
 var (
-	DefaultNamespace = "micro"
-	DefaultPrefix    = "micro"
+	// DefaultDatabase is the database that the sql store will use if no database is provided.
+	DefaultDatabase = "micro"
+	// DefaultTable is the table that the sql store will use if no table is provided.
+	DefaultTable = "micro"
 )
 
 type sqlStore struct {
@@ -172,17 +172,17 @@ func (s *sqlStore) configure() error {
 		nodes = []string{"localhost:3306"}
 	}
 
-	namespace := s.options.Namespace
-	if len(namespace) == 0 {
-		namespace = DefaultNamespace
+	database := s.options.Database
+	if len(database) == 0 {
+		database = DefaultDatabase
 	}
 
-	prefix := s.options.Prefix
-	if len(prefix) == 0 {
-		prefix = DefaultPrefix
+	table := s.options.Table
+	if len(table) == 0 {
+		table = DefaultTable
 	}
 
-	for _, r := range namespace {
+	for _, r := range database {
 		if !unicode.IsLetter(r) {
 			return errors.New("store.namespace must only contain letters")
 		}
@@ -205,8 +205,8 @@ func (s *sqlStore) configure() error {
 
 	// save the values
 	s.db = db
-	s.database = namespace
-	s.table = prefix
+	s.database = database
+	s.table = table
 
 	// initialise the database
 	return s.initDB()

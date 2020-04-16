@@ -30,7 +30,8 @@ func TestPubSub(t *testing.T) {
 
 	b := segmentio.NewBroker(broker.Addrs(addrs...))
 	if err := b.Connect(); err != nil {
-		t.Fatal(err)
+		t.Logf("cant connect to broker, skip: %v", err)
+		t.Skip()
 	}
 	defer func() {
 		if err := b.Disconnect(); err != nil {

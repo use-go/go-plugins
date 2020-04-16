@@ -21,7 +21,7 @@ func TestDurable(t *testing.T) {
 	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
 		t.Skip()
 	}
-	rabbitmq.DefaultRabbitURL = "amqp://rabbitmq:rabbitmq@172.18.0.2:5672"
+	rabbitmq.DefaultRabbitURL = "amqp://rabbitmq:rabbitmq@127.0.0.1:5672"
 	brkrSub := broker.NewSubscribeOptions(
 		broker.Queue("queue.default"),
 		broker.DisableAutoAck(),
@@ -30,7 +30,11 @@ func TestDurable(t *testing.T) {
 
 	b := rabbitmq.NewBroker()
 	b.Init()
-	b.Connect()
+	if err := b.Connect(); err != nil {
+		t.Logf("cant conect to broker, skip: %v", err)
+		t.Skip()
+	}
+
 	s := server.NewServer(server.Broker(b))
 
 	service := micro.NewService(

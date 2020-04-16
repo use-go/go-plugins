@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	}
 
 	sqlStoreT = NewStore(
-		store.Namespace("testMicro"),
+		store.Database("testMicro"),
 		store.Nodes("root:123@(127.0.0.1:3306)/test?charset=utf8&parseTime=true&loc=Asia%2FShanghai"),
 	)
 	os.Exit(m.Run())

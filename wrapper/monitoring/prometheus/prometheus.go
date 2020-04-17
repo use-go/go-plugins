@@ -102,7 +102,7 @@ func NewCallWrapper() client.CallWrapper {
 	return func(fn client.CallFunc) client.CallFunc {
 		opsCounter := prometheus.NewCounterVec(
 			prometheus.CounterOpts{
-				Name: fmt.Sprintf("%s_client_request_total", DefaultMetricPrefix),
+				Name: fmt.Sprintf("%s_call_request_total", DefaultMetricPrefix),
 				Help: "How many requests called, partitioned by method and status",
 			},
 			[]string{"method", "status"},
@@ -110,7 +110,7 @@ func NewCallWrapper() client.CallWrapper {
 
 		timeCounterSummary := prometheus.NewSummaryVec(
 			prometheus.SummaryOpts{
-				Name: fmt.Sprintf("%s_client_latency_microseconds", DefaultMetricPrefix),
+				Name: fmt.Sprintf("%s_call_latency_microseconds", DefaultMetricPrefix),
 				Help: "Service client request latencies in microseconds",
 			},
 			[]string{"method"},
@@ -118,7 +118,7 @@ func NewCallWrapper() client.CallWrapper {
 
 		timeCounterHistogram := prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name: fmt.Sprintf("%s_client_request_duration_seconds", DefaultMetricPrefix),
+				Name: fmt.Sprintf("%s_call_request_duration_seconds", DefaultMetricPrefix),
 				Help: "Service client request time in seconds",
 			},
 			[]string{"method"},

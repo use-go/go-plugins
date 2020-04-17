@@ -1,4 +1,4 @@
-package prometheus
+package prometheus_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/registry/memory"
 	"github.com/micro/go-micro/v2/server"
+	promwrapper "github.com/micro/go-plugins/wrapper/monitoring/prometheus/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +57,7 @@ func TestPrometheusMetrics(t *testing.T) {
 		server.Registry(reg),
 		server.Broker(brk),
 		server.WrapHandler(
-			NewHandlerWrapper(
+			promwrapper.NewHandlerWrapper(
 				server.Metadata(md),
 				server.Name(name),
 				server.Version(version),

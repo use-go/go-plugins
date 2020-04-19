@@ -29,6 +29,11 @@ func (w *latestVersionWrapper) Call(ctx context.Context, req client.Request, rsp
 
 func filterLatestVersion() selector.Filter {
 	return func(svcsOld []*registry.Service) []*registry.Service {
+
+		if len(svcsOld) <= 1 {
+			return svcsOld
+		}
+
 		var svcsNew []*registry.Service
 		versions := make([]string, len(svcsOld))
 

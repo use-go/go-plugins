@@ -233,6 +233,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 					cfg := k.readerConfig
 					cfg.Topic = topic
 					cfg.Partition = partition
+					cfg.GroupID = ""
 					reader := kafka.NewReader(cfg)
 					defer reader.Close()
 					// seek to the last committed offset for this partition.

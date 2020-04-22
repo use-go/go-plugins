@@ -271,7 +271,7 @@ func (k *kBroker) Subscribe(topic string, handler broker.Handler, opts ...broker
 						cfg.Topic = t
 						cfg.Partition = assignment.ID
 						cfg.GroupID = ""
-						//					cfg.StartOffset = assignment.Offset
+						cfg.StartOffset = assignment.Offset
 						cgh := &cgHandler{generation: generation, brokerOpts: k.opts, subOpts: opt, reader: kafka.NewReader(cfg), handler: handler}
 						generation.Start(cgh.run)
 					}

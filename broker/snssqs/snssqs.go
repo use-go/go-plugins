@@ -290,11 +290,14 @@ func Validate(msg *broker.Message) error {
 	return err
 }
 
-func (b *awsServices) getValidateOnPublish() bool {
-	if v := b.options.Context.Value(validateOnPublishKey{}); v != nil {
-		v2 := v.(bool)
-		return v2
+func getValidateOnPublish(ctx context.Context) bool {
+	if ctx == nil {
+		return defaultValidateOnPublish
 	}
+	if v, ok := ctx.Value(validateOnPublishKey{}).(bool); ok && v {
+		return true
+	}
+	// false by default
 	return defaultValidateOnPublish
 }
 
@@ -306,11 +309,9 @@ func (b *awsServices) Publish(topic string, msg *broker.Message, opts ...broker.
 		o(&options)
 	}
 
-	if options.Context != nil {
-		if b.getValidateOnPublish() {
-			if err := Validate(msg); err != nil {
-				return err
-			}
+	if getValidateOnPublish(options.Context) {
+		if err := Validate(msg); err != nil {
+			return err
 		}
 	}
 

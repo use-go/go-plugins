@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/micro/go-micro/v2/broker"
+	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/server"
 )
 
@@ -27,7 +28,17 @@ func setBrokerOption(k, v interface{}) broker.Option {
 	}
 }
 
-// setBrokerOption returns a function to setup a context with given value
+// setClientPublishOption returns a function to setup a context with given value
+func setClientPublishOption(k, v interface{}) client.PublishOption {
+	return func(o *client.PublishOptions) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		o.Context = context.WithValue(o.Context, k, v)
+	}
+}
+
+// setServerSubscriberOption returns a function to setup a context with given value
 func setServerSubscriberOption(k, v interface{}) server.SubscriberOption {
 	return func(o *server.SubscriberOptions) {
 		if o.Context == nil {

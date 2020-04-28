@@ -3,6 +3,7 @@ package snssqs
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/micro/go-micro/v2/broker"
+	"github.com/micro/go-micro/v2/client"
 )
 
 type maxMessagesKey struct{}
@@ -38,6 +39,10 @@ type validateOnPublishKey struct{}
 // This has a significant performance impact
 func ValidateOnPublish(validate bool) broker.PublishOption {
 	return setPublishOption(validateOnPublishKey{}, validate)
+}
+
+func ClientValidateOnPublish(validate bool) client.PublishOption {
+	return setClientPublishOption(validateOnPublishKey{}, validate)
 }
 
 // SNSConfig add AWS config options to the sns client

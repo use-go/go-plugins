@@ -81,8 +81,8 @@ func configure(c *consulRegistry, opts ...registry.Option) {
 		o(&c.opts)
 	}
 
-	// use default config
-	config := consul.DefaultConfig()
+	// use default non pooled config
+	config := consul.DefaultNonPooledConfig()
 
 	if c.opts.Context != nil {
 		// Use the consul config passed in the options, if available

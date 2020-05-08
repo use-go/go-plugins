@@ -324,7 +324,7 @@ func (h *cgHandler) run(ctx context.Context) {
 				var m broker.Message
 				eh := h.brokerOpts.ErrorHandler
 				offsets[msg.Topic][msg.Partition] = msg.Offset
-				p := &publication{generation: h.generation, m: &m, offsets: offsets}
+				p := &publication{topic: msg.Topic, generation: h.generation, m: &m, offsets: offsets}
 
 				if err := h.brokerOpts.Codec.Unmarshal(msg.Value, &m); err != nil {
 					p.err = err

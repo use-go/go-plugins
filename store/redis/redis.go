@@ -26,9 +26,16 @@ func (r *rkv) Close() error {
 }
 
 func (r *rkv) Read(key string, opts ...store.ReadOption) ([]*store.Record, error) {
+	options := store.ReadOptions{}
+	options.Table = r.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
 	records := make([]*store.Record, 0, 1)
 
-	rkey := fmt.Sprintf("%s%s", r.options.Table, key)
+	rkey := fmt.Sprintf("%s%s", options.Table, key)
 	val, err := r.Client.Get(rkey).Bytes()
 
 	if err != nil && err == redis.Nil {
@@ -75,7 +82,7 @@ func (r *rkv) Write(record *store.Record, opts ...store.WriteOption) error {
 		o(&options)
 	}
 
-	rkey := fmt.Sprintf("%s%s", r.options.Table, record.Key)
+	rkey := fmt.Sprintf("%s%s", options.Table, record.Key)
 	return r.Client.Set(rkey, record.Value, record.Expiry).Err()
 }
 

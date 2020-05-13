@@ -56,16 +56,37 @@ func (r *rkv) Read(key string, opts ...store.ReadOption) ([]*store.Record, error
 }
 
 func (r *rkv) Delete(key string, opts ...store.DeleteOption) error {
-	rkey := fmt.Sprintf("%s%s", r.options.Table, key)
+	options := store.DeleteOptions{}
+	options.Table = r.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
+	rkey := fmt.Sprintf("%s%s", options.Table, key)
 	return r.Client.Del(rkey).Err()
 }
 
 func (r *rkv) Write(record *store.Record, opts ...store.WriteOption) error {
+	options := store.WriteOptions{}
+	options.Table = r.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
 	rkey := fmt.Sprintf("%s%s", r.options.Table, record.Key)
 	return r.Client.Set(rkey, record.Value, record.Expiry).Err()
 }
 
 func (r *rkv) List(opts ...store.ListOption) ([]string, error) {
+	options := store.ListOptions{}
+	options.Table = r.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
 	keys, err := r.Client.Keys("*").Result()
 	if err != nil {
 		return nil, err

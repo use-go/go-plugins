@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"path/filepath"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/micro/go-micro/v2/store"
@@ -53,20 +54,46 @@ func (c *ckv) Close() error {
 }
 
 func (c *ckv) Delete(key string, opts ...store.DeleteOption) error {
-	_, err := c.client.KV().Delete(key, nil)
+	options := store.DeleteOptions{}
+	options.Table = c.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
+	_, err := c.client.KV().Delete(filepath.Join(options.Table, key), nil)
 	return err
 }
 
 func (c *ckv) Write(record *store.Record, opts ...store.WriteOption) error {
+	options := store.WriteOptions{}
+	options.Table = c.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+
 	_, err := c.client.KV().Put(&api.KVPair{
-		Key:   record.Key,
+		Key:   filepath.Join(options.Table, record.Key),
 		Value: record.Value,
 	}, nil)
 	return err
 }
 
 func (c *ckv) List(opts ...store.ListOption) ([]string, error) {
-	keyval, _, err := c.client.KV().List("/", nil)
+	options := store.ListOptions{}
+	options.Table = c.options.Table
+
+	for _, o := range opts {
+		o(&options)
+	}
+	if options.Table == "" {
+		options.Table = "/"
+	} else if options.Table[len(options.Table)-1] != '/' {
+		options.Table += "/"
+	}
+
+	keyval, _, err := c.client.KV().List(options.Table, nil)
 	if err != nil {
 		return nil, err
 	}

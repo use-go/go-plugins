@@ -3,6 +3,7 @@ package redis
 import (
 	"fmt"
 
+	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/store"
 	redis "gopkg.in/redis.v5"
 )
@@ -12,8 +13,12 @@ type rkv struct {
 	Client  *redis.Client
 }
 
-func (r *rkv) Init(...store.Option) error {
-	return nil
+func (r *rkv) Init(opts ...store.Option) error {
+	for _, o := range opts {
+		o(&r.options)
+	}
+
+	return r.configure()
 }
 
 func (r *rkv) Close() error {
@@ -83,18 +88,28 @@ func NewStore(opts ...store.Option) store.Store {
 		o(&options)
 	}
 
-	nodes := options.Nodes
+	s := new(rkv)
+	s.options = options
+
+	if err := s.configure(); err != nil {
+		log.Fatal(err)
+	}
+
+	return s
+}
+
+func (r *rkv) configure() error {
+	nodes := r.options.Nodes
 
 	if len(nodes) == 0 {
 		nodes = []string{"127.0.0.1:6379"}
 	}
 
-	return &rkv{
-		options: options,
-		Client: redis.NewClient(&redis.Options{
-			Addr:     nodes[0],
-			Password: "", // no password set
-			DB:       0,  // use default DB
-		}),
-	}
+	r.Client = redis.NewClient(&redis.Options{
+		Addr:     nodes[0],
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	return nil
 }

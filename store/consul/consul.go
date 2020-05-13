@@ -3,6 +3,7 @@ package consul
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/hashicorp/consul/api"
@@ -14,8 +15,11 @@ type ckv struct {
 	client  *api.Client
 }
 
-func (c *ckv) Init(...store.Option) error {
-	return nil
+func (c *ckv) Init(opts ...store.Option) error {
+	for _, o := range opts {
+		o(&c.options)
+	}
+	return c.configure()
 }
 
 func (c *ckv) Options() store.Options {
@@ -86,8 +90,23 @@ func NewStore(opts ...store.Option) store.Store {
 		o(&options)
 	}
 
+	// new store
+	s := new(ckv)
+	// set the options
+	s.options = options
+
+	// configure the store
+	if err := s.configure(); err != nil {
+		log.Fatal(err)
+	}
+
+	// return store
+	return s
+}
+
+func (ckv *ckv) configure() error {
 	config := api.DefaultConfig()
-	nodes := options.Nodes
+	nodes := ckv.options.Nodes
 
 	// set host
 	if len(nodes) > 0 {
@@ -100,10 +119,12 @@ func NewStore(opts ...store.Option) store.Store {
 		}
 	}
 
-	client, _ := api.NewClient(config)
-
-	return &ckv{
-		options: options,
-		client:  client,
+	client, err := api.NewClient(config)
+	if err != nil {
+		return err
 	}
+
+	ckv.client = client
+
+	return nil
 }

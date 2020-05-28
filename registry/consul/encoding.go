@@ -39,6 +39,7 @@ func decode(d string) []byte {
 	if err != nil {
 		return nil
 	}
+	zr.Close()
 
 	return rbuf
 }

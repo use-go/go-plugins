@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/server"
 	opentracing "github.com/opentracing/opentracing-go"
+	opentracinglog "github.com/opentracing/opentracing-go/log"
 )
 
 type otWrapper struct {
@@ -53,7 +54,10 @@ func (o *otWrapper) Call(ctx context.Context, req client.Request, rsp interface{
 		return err
 	}
 	defer span.Finish()
-	return o.Client.Call(ctx, req, rsp, opts...)
+	if err = o.Client.Call(ctx, req, rsp, opts...); err != nil {
+		span.LogFields(opentracinglog.String("error", err.Error()))
+	}
+	return err
 }
 
 func (o *otWrapper) Stream(ctx context.Context, req client.Request, opts ...client.CallOption) (client.Stream, error) {
@@ -63,7 +67,11 @@ func (o *otWrapper) Stream(ctx context.Context, req client.Request, opts ...clie
 		return nil, err
 	}
 	defer span.Finish()
-	return o.Client.Stream(ctx, req, opts...)
+	stream, err := o.Client.Stream(ctx, req, opts...)
+	if err = o.Client.Call(ctx, req, rsp, opts...); err != nil {
+		span.LogFields(opentracinglog.String("error", err.Error()))
+	}
+	return stream, err
 }
 
 func (o *otWrapper) Publish(ctx context.Context, p client.Message, opts ...client.PublishOption) error {
@@ -73,7 +81,10 @@ func (o *otWrapper) Publish(ctx context.Context, p client.Message, opts ...clien
 		return err
 	}
 	defer span.Finish()
-	return o.Client.Publish(ctx, p, opts...)
+	if err = o.Client.Publish(ctx, p, opts...); err != nil {
+		span.LogFields(opentracinglog.String("error", err.Error()))
+	}
+	return err
 }
 
 // NewClientWrapper accepts an open tracing Trace and returns a Client Wrapper
@@ -99,7 +110,10 @@ func NewCallWrapper(ot opentracing.Tracer) client.CallWrapper {
 				return err
 			}
 			defer span.Finish()
-			return cf(ctx, node, req, rsp, opts)
+			if err = cf(ctx, node, req, rsp, opts); err != nil {
+				span.LogFields(opentracinglog.String("error", err.Error()))
+			}
+			return err
 		}
 	}
 }
@@ -117,7 +131,10 @@ func NewHandlerWrapper(ot opentracing.Tracer) server.HandlerWrapper {
 				return err
 			}
 			defer span.Finish()
-			return h(ctx, req, rsp)
+			if err = h(ctx, req, rsp); err != nil {
+				span.LogFields(opentracinglog.String("error", err.Error()))
+			}
+			return err
 		}
 	}
 }
@@ -135,7 +152,10 @@ func NewSubscriberWrapper(ot opentracing.Tracer) server.SubscriberWrapper {
 				return err
 			}
 			defer span.Finish()
-			return next(ctx, msg)
+			if err = next(ctx, msg); err != nil {
+				span.LogFields(opentracinglog.String("error", err.Error()))
+			}
+			return err
 		}
 	}
 }

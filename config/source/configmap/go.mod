@@ -5,10 +5,9 @@ go 1.13
 require (
 	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/micro/go-micro/v2 v2.5.0
+	github.com/micro/go-micro/v2 v2.8.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/api v0.0.0-00010101000000-000000000000
 	k8s.io/apimachinery v0.0.0-00010101000000-000000000000

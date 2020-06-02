@@ -4,6 +4,6 @@ go 1.13
 
 require (
 	github.com/aws/aws-sdk-go v1.28.4
-	github.com/micro/go-micro/v2 v2.5.0
+	github.com/micro/go-micro/v2 v2.8.0
 	golang.org/x/text v0.3.2
 )

@@ -3,6 +3,6 @@ module github.com/micro/go-plugins/config/source/mucp/v2
 go 1.13
 
 require (
-	github.com/golang/protobuf v1.3.5
-	github.com/micro/go-micro/v2 v2.5.0
+	github.com/golang/protobuf v1.4.0
+	github.com/micro/go-micro/v2 v2.8.0
 )

@@ -68,7 +68,7 @@ func (o *otWrapper) Stream(ctx context.Context, req client.Request, opts ...clie
 	}
 	defer span.Finish()
 	stream, err := o.Client.Stream(ctx, req, opts...)
-	if err = o.Client.Call(ctx, req, rsp, opts...); err != nil {
+	if err != nil {
 		span.LogFields(opentracinglog.String("error", err.Error()))
 	}
 	return stream, err

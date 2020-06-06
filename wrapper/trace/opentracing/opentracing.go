@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"context"
+	"strings"
 
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/metadata"
@@ -36,10 +37,17 @@ func StartSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name s
 		opts = append(opts, opentracing.ChildOf(spanCtx))
 	}
 
+	// allocate new map with only one element
+	nmd := make(metadata.Metadata, 1)
+
 	sp := tracer.StartSpan(name, opts...)
 
-	if err := sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.TextMapCarrier(md)); err != nil {
+	if err := sp.Tracer().Inject(sp.Context(), opentracing.TextMap, opentracing.TextMapCarrier(nmd)); err != nil {
 		return nil, nil, err
+	}
+
+	for k, v := range nmd {
+		md.Set(strings.Title(k), v)
 	}
 
 	ctx = opentracing.ContextWithSpan(ctx, sp)

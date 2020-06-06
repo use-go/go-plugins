@@ -64,6 +64,7 @@ func (o *otWrapper) Call(ctx context.Context, req client.Request, rsp interface{
 	defer span.Finish()
 	if err = o.Client.Call(ctx, req, rsp, opts...); err != nil {
 		span.LogFields(opentracinglog.String("error", err.Error()))
+		span.SetTag("error", true)
 	}
 	return err
 }
@@ -78,6 +79,7 @@ func (o *otWrapper) Stream(ctx context.Context, req client.Request, opts ...clie
 	stream, err := o.Client.Stream(ctx, req, opts...)
 	if err != nil {
 		span.LogFields(opentracinglog.String("error", err.Error()))
+		span.SetTag("error", true)
 	}
 	return stream, err
 }
@@ -91,6 +93,7 @@ func (o *otWrapper) Publish(ctx context.Context, p client.Message, opts ...clien
 	defer span.Finish()
 	if err = o.Client.Publish(ctx, p, opts...); err != nil {
 		span.LogFields(opentracinglog.String("error", err.Error()))
+		span.SetTag("error", true)
 	}
 	return err
 }
@@ -120,6 +123,7 @@ func NewCallWrapper(ot opentracing.Tracer) client.CallWrapper {
 			defer span.Finish()
 			if err = cf(ctx, node, req, rsp, opts); err != nil {
 				span.LogFields(opentracinglog.String("error", err.Error()))
+				span.SetTag("error", true)
 			}
 			return err
 		}
@@ -141,6 +145,7 @@ func NewHandlerWrapper(ot opentracing.Tracer) server.HandlerWrapper {
 			defer span.Finish()
 			if err = h(ctx, req, rsp); err != nil {
 				span.LogFields(opentracinglog.String("error", err.Error()))
+				span.SetTag("error", true)
 			}
 			return err
 		}
@@ -162,6 +167,7 @@ func NewSubscriberWrapper(ot opentracing.Tracer) server.SubscriberWrapper {
 			defer span.Finish()
 			if err = next(ctx, msg); err != nil {
 				span.LogFields(opentracinglog.String("error", err.Error()))
+				span.SetTag("error", true)
 			}
 			return err
 		}

@@ -17,9 +17,9 @@ type access struct {
 func (w *access) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:   "rpc_access",
+			Name:   "rpc_allow",
 			Usage:  "Comma separated access of accessed services for RPC calls",
-			EnvVars: []string{"RPC_WHITELIST"},
+			EnvVars: []string{"RPC_ALLOW"},
 		},
 	}
 }
@@ -35,7 +35,7 @@ func (w *access) Handler() plugin.Handler {
 }
 
 func (w *access) Init(ctx *cli.Context) error {
-	if access := ctx.String("rpc_access"); len(access) > 0 {
+	if access := ctx.String("rpc_allow"); len(access) > 0 {
 		client.DefaultClient = newClient(strings.Split(access, ",")...)
 	}
 	return nil
@@ -46,10 +46,10 @@ func (w *access) String() string {
 }
 
 func NewPlugin() plugin.Plugin {
-	return NewRPCAccess()
+	return NewRPCAllow()
 }
 
-func NewRPCAccess(services ...string) plugin.Plugin {
+func NewRPCAllow(services ...string) plugin.Plugin {
 	list := make(map[string]bool)
 
 	for _, service := range services {

@@ -17,14 +17,14 @@ import (
 )
 
 func init() {
-	plugin.Register(ip.NewIPAccess())
+	plugin.Register(ip.NewIPAllow())
 }
 ```
 
 It can then be applied on the command line like so.
 
 ```
-micro --ip_access=10.1.1.10,10.1.1.11,10.1.2.0/24 api
+micro --ip_allow=10.1.1.10,10.1.1.11,10.1.2.0/24 api
 ```
 
 ### Scoped to API
@@ -41,7 +41,7 @@ import (
 )
 
 func init() {
-	api.Register(ip.NewIPAccess())
+	api.Register(ip.NewIPAllow())
 }
 ```
 
@@ -56,11 +56,11 @@ USAGE:
    main api [command options] [arguments...]
 
 OPTIONS:
-   --ip_access 	Comma separated access of accessed IP addresses [$MICRO_IP_WHITELIST]
+   --ip_allow 	Comma separated list of allowed IP addresses [$MICRO_IP_ALLOW]
 ```
 
 In this case the usage would be
 
 ```
-micro api --ip_access 10.0.0.0/8
+micro api --ip_allow 10.0.0.0/8
 ```

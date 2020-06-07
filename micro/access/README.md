@@ -15,14 +15,14 @@ import (
 )
 
 func init() {
-	plugin.Register(access.NewRPCAccess())
+	plugin.Register(access.NewRPCAllow())
 }
 ```
 
 It can then be applied on the command line like so.
 
 ```
-micro --rpc_access go.micro.srv.greeter,go.micro.srv.example api
+micro --rpc_allow go.micro.srv.greeter,go.micro.srv.example api
 ```
 
 ### Scoped to API
@@ -39,7 +39,7 @@ import (
 )
 
 func init() {
-	api.Register(access.NewRPCAccess())
+	api.Register(access.NewRPCAllow())
 }
 ```
 
@@ -54,11 +54,11 @@ USAGE:
    main api [command options] [arguments...]
 
 OPTIONS:
-   --rpc_access 	Comma separated access of accessed services for RPC calls [$MICRO_RPC_WHITELIST]
+   --rpc_allow 	Comma separated access of accessed services for RPC calls [$MICRO_RPC_ALLOW]
 ```
 
 In this case the usage would be
 
 ```
-micro api --rpc_access go.micro.srv.greeter
+micro api --rpc_allow go.micro.srv.greeter
 ```

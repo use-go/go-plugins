@@ -19,9 +19,9 @@ type access struct {
 func (w *access) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    "ip_access",
-			Usage:   "Comma separated access of accessed IPs",
-			EnvVars: []string{"IP_WHITELIST"},
+			Name:    "ip_allow",
+			Usage:   "Comma separated list of allowed IPs",
+			EnvVars: []string{"IP_ALLOW"},
 		},
 	}
 }
@@ -38,11 +38,11 @@ func (w *access) load(ips ...string) {
 			// parse cidr
 			_, ipnet, err := net.ParseCIDR(ip)
 			if err != nil {
-				log.Fatalf("[ip_access] failed to parse %v: %v", ip, err)
+				log.Fatalf("[ip_allow] failed to parse %v: %v", ip, err)
 			}
 			w.cidrs[ipnet.String()] = ipnet
 		default:
-			log.Fatalf("[ip_access] failed to parse %v", ip)
+			log.Fatalf("[ip_allow] failed to parse %v", ip)
 		}
 	}
 
@@ -91,7 +91,7 @@ func (w *access) Handler() plugin.Handler {
 }
 
 func (w *access) Init(ctx *cli.Context) error {
-	if access := ctx.String("ip_access"); len(access) > 0 {
+	if access := ctx.String("ip_allow"); len(access) > 0 {
 		w.load(strings.Split(access, ",")...)
 	}
 	return nil
@@ -105,7 +105,7 @@ func NewPlugin() plugin.Plugin {
 	return NewIPAccess()
 }
 
-func NewIPAccess(ips ...string) plugin.Plugin {
+func NewIPAllow(ips ...string) plugin.Plugin {
 	// create plugin
 	w := &access{
 		cidrs: make(map[string]*net.IPNet),

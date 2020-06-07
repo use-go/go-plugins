@@ -1,6 +1,6 @@
-# IP Whitelist Plugin
+# IP Allow Plugin
 
-The IP whitelist plugin is a straight forward plugin for micro which whitelists IP addresses that can access the API.
+The IP allow plugin is a straight forward plugin for micro which allows IP addresses that can access the API.
 
 Current implementation accepts individual IPs or a CIDR.
 
@@ -13,7 +13,7 @@ package main
 
 import (
 	"github.com/micro/micro/plugin"
-	ip "github.com/micro/go-plugins/micro/ip_whitelist"
+	ip "github.com/micro/go-plugins/micro/ip_allow"
 )
 
 func init() {
@@ -24,7 +24,7 @@ func init() {
 It can then be applied on the command line like so.
 
 ```
-micro --ip_whitelist=10.1.1.10,10.1.1.11,10.1.2.0/24 api
+micro --ip_allow=10.1.1.10,10.1.1.11,10.1.2.0/24 api
 ```
 
 ### Scoped to API
@@ -37,7 +37,7 @@ package main
 
 import (
 	"github.com/micro/micro/api"
-	ip "github.com/micro/go-plugins/micro/ip_whitelist"
+	ip "github.com/micro/go-plugins/micro/ip_allow"
 )
 
 func init() {
@@ -56,11 +56,11 @@ USAGE:
    main api [command options] [arguments...]
 
 OPTIONS:
-   --ip_whitelist 	Comma separated whitelist of allowed IP addresses [$MICRO_IP_WHITELIST]
+   --ip_allow 	Comma separated allow of allowed IP addresses [$MICRO_IP_WHITELIST]
 ```
 
 In this case the usage would be
 
 ```
-micro api --ip_whitelist 10.0.0.0/8
+micro api --ip_allow 10.0.0.0/8
 ```

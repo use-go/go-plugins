@@ -1,6 +1,6 @@
-# IP Allow Plugin
+# IP Access Plugin
 
-The IP allow plugin is a straight forward plugin for micro which allows IP addresses that can access the API.
+The IP access plugin is a straight forward plugin for micro which accesss IP addresses that can access the API.
 
 Current implementation accepts individual IPs or a CIDR.
 
@@ -13,18 +13,18 @@ package main
 
 import (
 	"github.com/micro/micro/plugin"
-	ip "github.com/micro/go-plugins/micro/ip_allow"
+	ip "github.com/micro/go-plugins/micro/ip_access"
 )
 
 func init() {
-	plugin.Register(ip.NewIPAllow())
+	plugin.Register(ip.NewIPAccess())
 }
 ```
 
 It can then be applied on the command line like so.
 
 ```
-micro --ip_allow=10.1.1.10,10.1.1.11,10.1.2.0/24 api
+micro --ip_access=10.1.1.10,10.1.1.11,10.1.2.0/24 api
 ```
 
 ### Scoped to API
@@ -37,11 +37,11 @@ package main
 
 import (
 	"github.com/micro/micro/api"
-	ip "github.com/micro/go-plugins/micro/ip_allow"
+	ip "github.com/micro/go-plugins/micro/ip_access"
 )
 
 func init() {
-	api.Register(ip.NewIPAllow())
+	api.Register(ip.NewIPAccess())
 }
 ```
 
@@ -56,11 +56,11 @@ USAGE:
    main api [command options] [arguments...]
 
 OPTIONS:
-   --ip_allow 	Comma separated allow of allowed IP addresses [$MICRO_IP_WHITELIST]
+   --ip_access 	Comma separated access of accessed IP addresses [$MICRO_IP_WHITELIST]
 ```
 
 In this case the usage would be
 
 ```
-micro api --ip_allow 10.0.0.0/8
+micro api --ip_access 10.0.0.0/8
 ```

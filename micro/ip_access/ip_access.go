@@ -1,5 +1,5 @@
-// Package ip_allow is a micro plugin for allowing ip addresses
-package ip_allow
+// Package ip_access is a micro plugin for accessing ip addresses
+package ip_access
 
 import (
 	"net"
@@ -11,22 +11,22 @@ import (
 	"github.com/micro/micro/v2/plugin"
 )
 
-type allow struct {
+type access struct {
 	cidrs map[string]*net.IPNet
 	ips   map[string]bool
 }
 
-func (w *allow) Flags() []cli.Flag {
+func (w *access) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    "ip_allow",
-			Usage:   "Comma separated allow of allowed IPs",
+			Name:    "ip_access",
+			Usage:   "Comma separated access of accessed IPs",
 			EnvVars: []string{"IP_WHITELIST"},
 		},
 	}
 }
 
-func (w *allow) load(ips ...string) {
+func (w *access) load(ips ...string) {
 	for _, ip := range ips {
 		parts := strings.Split(ip, "/")
 
@@ -38,17 +38,17 @@ func (w *allow) load(ips ...string) {
 			// parse cidr
 			_, ipnet, err := net.ParseCIDR(ip)
 			if err != nil {
-				log.Fatalf("[ip_allow] failed to parse %v: %v", ip, err)
+				log.Fatalf("[ip_access] failed to parse %v: %v", ip, err)
 			}
 			w.cidrs[ipnet.String()] = ipnet
 		default:
-			log.Fatalf("[ip_allow] failed to parse %v", ip)
+			log.Fatalf("[ip_access] failed to parse %v", ip)
 		}
 	}
 
 }
 
-func (w *allow) match(ip string) bool {
+func (w *access) match(ip string) bool {
 	// make ip
 	nip := net.ParseIP(ip)
 
@@ -68,11 +68,11 @@ func (w *allow) match(ip string) bool {
 	return false
 }
 
-func (w *allow) Commands() []*cli.Command {
+func (w *access) Commands() []*cli.Command {
 	return nil
 }
 
-func (w *allow) Handler() plugin.Handler {
+func (w *access) Handler() plugin.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// check remote addr; if we can't parse it passes through
@@ -90,24 +90,24 @@ func (w *allow) Handler() plugin.Handler {
 	}
 }
 
-func (w *allow) Init(ctx *cli.Context) error {
-	if allow := ctx.String("ip_allow"); len(allow) > 0 {
-		w.load(strings.Split(allow, ",")...)
+func (w *access) Init(ctx *cli.Context) error {
+	if access := ctx.String("ip_access"); len(access) > 0 {
+		w.load(strings.Split(access, ",")...)
 	}
 	return nil
 }
 
-func (w *allow) String() string {
-	return "ip_allow"
+func (w *access) String() string {
+	return "ip_access"
 }
 
 func NewPlugin() plugin.Plugin {
-	return NewIPAllow()
+	return NewIPAccess()
 }
 
-func NewIPAllow(ips ...string) plugin.Plugin {
+func NewIPAccess(ips ...string) plugin.Plugin {
 	// create plugin
-	w := &allow{
+	w := &access{
 		cidrs: make(map[string]*net.IPNet),
 		ips:   make(map[string]bool),
 	}

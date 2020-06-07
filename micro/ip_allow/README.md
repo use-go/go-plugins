@@ -1,6 +1,6 @@
-# IP Access Plugin
+# IP Allow Plugin
 
-The IP access plugin is a straight forward plugin for micro which accesss IP addresses that can access the API.
+The IP allow plugin is a straight forward plugin for micro which allows IP addresses that can allow the API.
 
 Current implementation accepts individual IPs or a CIDR.
 
@@ -13,7 +13,7 @@ package main
 
 import (
 	"github.com/micro/micro/plugin"
-	ip "github.com/micro/go-plugins/micro/ip_access"
+	ip "github.com/micro/go-plugins/micro/ip_allow"
 )
 
 func init() {
@@ -37,7 +37,7 @@ package main
 
 import (
 	"github.com/micro/micro/api"
-	ip "github.com/micro/go-plugins/micro/ip_access"
+	ip "github.com/micro/go-plugins/micro/ip_allow"
 )
 
 func init() {

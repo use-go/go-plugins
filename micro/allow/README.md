@@ -1,6 +1,6 @@
-# Access Plugin
+# Allow Plugin
 
-The access plugin is a plugin for micro which accesss the services that can be used via the /rpc HTTP endpoint.
+The allow plugin is a plugin for micro which allows the services that can be used via the /rpc HTTP endpoint.
 
 ## Usage
 
@@ -11,11 +11,11 @@ package main
 
 import (
 	"github.com/micro/micro/plugin"
-	"github.com/micro/go-plugins/micro/access"
+	"github.com/micro/go-plugins/micro/allow"
 )
 
 func init() {
-	plugin.Register(access.NewRPCAllow())
+	plugin.Register(allow.NewRPCAllow())
 }
 ```
 
@@ -35,11 +35,11 @@ package main
 
 import (
 	"github.com/micro/micro/api"
-	"github.com/micro/go-plugins/micro/access"
+	"github.com/micro/go-plugins/micro/allow"
 )
 
 func init() {
-	api.Register(access.NewRPCAllow())
+	api.Register(allow.NewRPCAllow())
 }
 ```
 
@@ -54,7 +54,7 @@ USAGE:
    main api [command options] [arguments...]
 
 OPTIONS:
-   --rpc_allow 	Comma separated access of accessed services for RPC calls [$MICRO_RPC_ALLOW]
+   --rpc_allow 	Comma separated allow of allowed services for RPC calls [$MICRO_RPC_ALLOW]
 ```
 
 In this case the usage would be

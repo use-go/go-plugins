@@ -1,5 +1,5 @@
-// Package access is a micro plugin for accessing service requests
-package access
+// Package allow is a micro plugin for allowing service requests
+package allow
 
 import (
 	"net/http"
@@ -10,39 +10,39 @@ import (
 	"github.com/micro/micro/v2/plugin"
 )
 
-type access struct {
+type allow struct {
 	services map[string]bool
 }
 
-func (w *access) Flags() []cli.Flag {
+func (w *allow) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:   "rpc_allow",
-			Usage:  "Comma separated access of accessed services for RPC calls",
+			Usage:  "Comma separated allow of allowed services for RPC calls",
 			EnvVars: []string{"RPC_ALLOW"},
 		},
 	}
 }
 
-func (w *access) Commands() []*cli.Command {
+func (w *allow) Commands() []*cli.Command {
 	return nil
 }
 
-func (w *access) Handler() plugin.Handler {
+func (w *allow) Handler() plugin.Handler {
 	return func(h http.Handler) http.Handler {
 		return h
 	}
 }
 
-func (w *access) Init(ctx *cli.Context) error {
-	if access := ctx.String("rpc_allow"); len(access) > 0 {
-		client.DefaultClient = newClient(strings.Split(access, ",")...)
+func (w *allow) Init(ctx *cli.Context) error {
+	if allow := ctx.String("rpc_allow"); len(allow) > 0 {
+		client.DefaultClient = newClient(strings.Split(allow, ",")...)
 	}
 	return nil
 }
 
-func (w *access) String() string {
-	return "access"
+func (w *allow) String() string {
+	return "allow"
 }
 
 func NewPlugin() plugin.Plugin {
@@ -56,7 +56,7 @@ func NewRPCAllow(services ...string) plugin.Plugin {
 		list[service] = true
 	}
 
-	return &access{
+	return &allow{
 		services: list,
 	}
 }

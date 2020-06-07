@@ -1,5 +1,5 @@
-// Package ip_access is a micro plugin for accessing ip addresses
-package ip_access
+// Package ip_allow is a micro plugin for allowing ip addresses
+package ip_allow
 
 import (
 	"net"
@@ -11,12 +11,12 @@ import (
 	"github.com/micro/micro/v2/plugin"
 )
 
-type access struct {
+type allow struct {
 	cidrs map[string]*net.IPNet
 	ips   map[string]bool
 }
 
-func (w *access) Flags() []cli.Flag {
+func (w *allow) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    "ip_allow",
@@ -26,7 +26,7 @@ func (w *access) Flags() []cli.Flag {
 	}
 }
 
-func (w *access) load(ips ...string) {
+func (w *allow) load(ips ...string) {
 	for _, ip := range ips {
 		parts := strings.Split(ip, "/")
 
@@ -48,7 +48,7 @@ func (w *access) load(ips ...string) {
 
 }
 
-func (w *access) match(ip string) bool {
+func (w *allow) match(ip string) bool {
 	// make ip
 	nip := net.ParseIP(ip)
 
@@ -68,11 +68,11 @@ func (w *access) match(ip string) bool {
 	return false
 }
 
-func (w *access) Commands() []*cli.Command {
+func (w *allow) Commands() []*cli.Command {
 	return nil
 }
 
-func (w *access) Handler() plugin.Handler {
+func (w *allow) Handler() plugin.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// check remote addr; if we can't parse it passes through
@@ -90,24 +90,24 @@ func (w *access) Handler() plugin.Handler {
 	}
 }
 
-func (w *access) Init(ctx *cli.Context) error {
-	if access := ctx.String("ip_allow"); len(access) > 0 {
-		w.load(strings.Split(access, ",")...)
+func (w *allow) Init(ctx *cli.Context) error {
+	if allow := ctx.String("ip_allow"); len(allow) > 0 {
+		w.load(strings.Split(allow, ",")...)
 	}
 	return nil
 }
 
-func (w *access) String() string {
-	return "ip_access"
+func (w *allow) String() string {
+	return "ip_allow"
 }
 
 func NewPlugin() plugin.Plugin {
-	return NewIPAccess()
+	return NewIPAllow()
 }
 
 func NewIPAllow(ips ...string) plugin.Plugin {
 	// create plugin
-	w := &access{
+	w := &allow{
 		cidrs: make(map[string]*net.IPNet),
 		ips:   make(map[string]bool),
 	}

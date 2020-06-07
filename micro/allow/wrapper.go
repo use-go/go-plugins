@@ -1,4 +1,4 @@
-package access
+package allow
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 
 type wrapper struct {
 	client.Client
-	access map[string]bool
+	allow map[string]bool
 }
 
 func (w *wrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	if !w.access[req.Service()] {
+	if !w.allow[req.Service()] {
 		return errors.Forbidden("go.micro.rpc", "forbidden")
 	}
 
@@ -21,11 +21,11 @@ func (w *wrapper) Call(ctx context.Context, req client.Request, rsp interface{},
 }
 
 func newClient(services ...string) client.Client {
-	access := make(map[string]bool)
+	allow := make(map[string]bool)
 
 	for _, service := range services {
-		access[service] = true
+		allow[service] = true
 	}
 
-	return &wrapper{client.DefaultClient, access}
+	return &wrapper{client.DefaultClient, allow}
 }

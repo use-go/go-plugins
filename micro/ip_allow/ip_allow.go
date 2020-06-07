@@ -1,5 +1,5 @@
-// Package ip_whitelist is a micro plugin for whitelisting ip addresses
-package ip_whitelist
+// Package ip_allow is a micro plugin for allowing ip addresses
+package ip_allow
 
 import (
 	"net"
@@ -11,22 +11,22 @@ import (
 	"github.com/micro/micro/v2/plugin"
 )
 
-type whitelist struct {
+type allow struct {
 	cidrs map[string]*net.IPNet
 	ips   map[string]bool
 }
 
-func (w *whitelist) Flags() []cli.Flag {
+func (w *allow) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    "ip_whitelist",
-			Usage:   "Comma separated whitelist of allowed IPs",
+			Name:    "ip_allow",
+			Usage:   "Comma separated allow of allowed IPs",
 			EnvVars: []string{"IP_WHITELIST"},
 		},
 	}
 }
 
-func (w *whitelist) load(ips ...string) {
+func (w *allow) load(ips ...string) {
 	for _, ip := range ips {
 		parts := strings.Split(ip, "/")
 
@@ -38,17 +38,17 @@ func (w *whitelist) load(ips ...string) {
 			// parse cidr
 			_, ipnet, err := net.ParseCIDR(ip)
 			if err != nil {
-				log.Fatalf("[ip_whitelist] failed to parse %v: %v", ip, err)
+				log.Fatalf("[ip_allow] failed to parse %v: %v", ip, err)
 			}
 			w.cidrs[ipnet.String()] = ipnet
 		default:
-			log.Fatalf("[ip_whitelist] failed to parse %v", ip)
+			log.Fatalf("[ip_allow] failed to parse %v", ip)
 		}
 	}
 
 }
 
-func (w *whitelist) match(ip string) bool {
+func (w *allow) match(ip string) bool {
 	// make ip
 	nip := net.ParseIP(ip)
 
@@ -68,11 +68,11 @@ func (w *whitelist) match(ip string) bool {
 	return false
 }
 
-func (w *whitelist) Commands() []*cli.Command {
+func (w *allow) Commands() []*cli.Command {
 	return nil
 }
 
-func (w *whitelist) Handler() plugin.Handler {
+func (w *allow) Handler() plugin.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			// check remote addr; if we can't parse it passes through
@@ -90,15 +90,15 @@ func (w *whitelist) Handler() plugin.Handler {
 	}
 }
 
-func (w *whitelist) Init(ctx *cli.Context) error {
-	if whitelist := ctx.String("ip_whitelist"); len(whitelist) > 0 {
-		w.load(strings.Split(whitelist, ",")...)
+func (w *allow) Init(ctx *cli.Context) error {
+	if allow := ctx.String("ip_allow"); len(allow) > 0 {
+		w.load(strings.Split(allow, ",")...)
 	}
 	return nil
 }
 
-func (w *whitelist) String() string {
-	return "ip_whitelist"
+func (w *allow) String() string {
+	return "ip_allow"
 }
 
 func NewPlugin() plugin.Plugin {
@@ -107,7 +107,7 @@ func NewPlugin() plugin.Plugin {
 
 func NewIPWhitelist(ips ...string) plugin.Plugin {
 	// create plugin
-	w := &whitelist{
+	w := &allow{
 		cidrs: make(map[string]*net.IPNet),
 		ips:   make(map[string]bool),
 	}

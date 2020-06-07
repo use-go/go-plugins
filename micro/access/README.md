@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	plugin.Register(access.NewRPCWhitelist())
+	plugin.Register(access.NewRPCAccess())
 }
 ```
 
@@ -39,7 +39,7 @@ import (
 )
 
 func init() {
-	api.Register(access.NewRPCWhitelist())
+	api.Register(access.NewRPCAccess())
 }
 ```
 

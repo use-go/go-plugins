@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	plugin.Register(ip.NewIPWhitelist())
+	plugin.Register(ip.NewIPAllow())
 }
 ```
 
@@ -41,7 +41,7 @@ import (
 )
 
 func init() {
-	api.Register(ip.NewIPWhitelist())
+	api.Register(ip.NewIPAllow())
 }
 ```
 

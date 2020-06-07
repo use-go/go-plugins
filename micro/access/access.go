@@ -46,10 +46,10 @@ func (w *access) String() string {
 }
 
 func NewPlugin() plugin.Plugin {
-	return NewRPCWhitelist()
+	return NewRPCAccess()
 }
 
-func NewRPCWhitelist(services ...string) plugin.Plugin {
+func NewRPCAccess(services ...string) plugin.Plugin {
 	list := make(map[string]bool)
 
 	for _, service := range services {

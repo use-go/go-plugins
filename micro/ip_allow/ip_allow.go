@@ -102,10 +102,10 @@ func (w *allow) String() string {
 }
 
 func NewPlugin() plugin.Plugin {
-	return NewIPWhitelist()
+	return NewIPAllow()
 }
 
-func NewIPWhitelist(ips ...string) plugin.Plugin {
+func NewIPAllow(ips ...string) plugin.Plugin {
 	// create plugin
 	w := &allow{
 		cidrs: make(map[string]*net.IPNet),

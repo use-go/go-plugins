@@ -156,7 +156,7 @@ func NewHandlerWrapper(ot opentracing.Tracer) server.HandlerWrapper {
 func NewSubscriberWrapper(ot opentracing.Tracer) server.SubscriberWrapper {
 	return func(next server.SubscriberFunc) server.SubscriberFunc {
 		return func(ctx context.Context, msg server.Message) error {
-			name := "Pub to " + msg.Topic()
+			name := "Sub from " + msg.Topic()
 			if ot == nil {
 				ot = opentracing.GlobalTracer()
 			}

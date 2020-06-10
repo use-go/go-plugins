@@ -45,10 +45,6 @@ func TestPrometheusMetrics(t *testing.T) {
 	id := "id-1234567890"
 	version := "1.2.3.4"
 
-	md := make(map[string]string)
-	md["dc"] = "dc1"
-	md["node"] = "node1"
-
 	c := client.NewClient(client.Selector(sel))
 	s := server.NewServer(
 		server.Name(name),
@@ -58,10 +54,9 @@ func TestPrometheusMetrics(t *testing.T) {
 		server.Broker(brk),
 		server.WrapHandler(
 			promwrapper.NewHandlerWrapper(
-				server.Metadata(md),
-				server.Name(name),
-				server.Version(version),
-				server.Id(id),
+				promwrapper.ServiceName(name),
+				promwrapper.ServiceVersion(version),
+				promwrapper.ServiceID(id),
 			),
 		),
 	)
@@ -90,7 +85,7 @@ func TestPrometheusMetrics(t *testing.T) {
 
 	list, _ := prometheus.DefaultGatherer.Gather()
 
-	metric := findMetricByName(list, dto.MetricType_SUMMARY, "micro_handler_latency_microseconds")
+	metric := findMetricByName(list, dto.MetricType_SUMMARY, "micro_latency_microseconds")
 
 	if metric == nil || metric.Metric == nil || len(metric.Metric) == 0 {
 		t.Fatalf("no metrics returned")
@@ -98,17 +93,13 @@ func TestPrometheusMetrics(t *testing.T) {
 
 	for _, v := range metric.Metric[0].Label {
 		switch *v.Name {
-		case "micro_dc":
-			assert.Equal(t, "dc1", *v.Value)
-		case "micro_node":
-			assert.Equal(t, "node1", *v.Value)
 		case "micro_version":
 			assert.Equal(t, version, *v.Value)
 		case "micro_id":
 			assert.Equal(t, id, *v.Value)
 		case "micro_name":
 			assert.Equal(t, name, *v.Value)
-		case "method":
+		case "micro_endpoint":
 			assert.Equal(t, "Test.Method", *v.Value)
 		default:
 			t.Fatalf("unknown %v with %v", *v.Name, *v.Value)
@@ -118,21 +109,17 @@ func TestPrometheusMetrics(t *testing.T) {
 	assert.Equal(t, uint64(2), *metric.Metric[0].Summary.SampleCount)
 	assert.True(t, *metric.Metric[0].Summary.SampleSum > 0)
 
-	metric = findMetricByName(list, dto.MetricType_HISTOGRAM, "micro_handler_request_duration_seconds")
+	metric = findMetricByName(list, dto.MetricType_HISTOGRAM, "micro_request_duration_seconds")
 
 	for _, v := range metric.Metric[0].Label {
 		switch *v.Name {
-		case "micro_dc":
-			assert.Equal(t, "dc1", *v.Value)
-		case "micro_node":
-			assert.Equal(t, "node1", *v.Value)
 		case "micro_version":
 			assert.Equal(t, version, *v.Value)
 		case "micro_id":
 			assert.Equal(t, id, *v.Value)
 		case "micro_name":
 			assert.Equal(t, name, *v.Value)
-		case "method":
+		case "micro_endpoint":
 			assert.Equal(t, "Test.Method", *v.Value)
 		default:
 			t.Fatalf("unknown %v with %v", *v.Name, *v.Value)
@@ -142,43 +129,35 @@ func TestPrometheusMetrics(t *testing.T) {
 	assert.Equal(t, uint64(2), *metric.Metric[0].Histogram.SampleCount)
 	assert.True(t, *metric.Metric[0].Histogram.SampleSum > 0)
 
-	metric = findMetricByName(list, dto.MetricType_COUNTER, "micro_handler_request_total")
+	metric = findMetricByName(list, dto.MetricType_COUNTER, "micro_request_total")
 
 	for _, v := range metric.Metric[0].Label {
 		switch *v.Name {
-		case "micro_dc":
-			assert.Equal(t, "dc1", *v.Value)
-		case "micro_node":
-			assert.Equal(t, "node1", *v.Value)
 		case "micro_version":
 			assert.Equal(t, version, *v.Value)
 		case "micro_id":
 			assert.Equal(t, id, *v.Value)
 		case "micro_name":
 			assert.Equal(t, name, *v.Value)
-		case "method":
+		case "micro_endpoint":
 			assert.Equal(t, "Test.Method", *v.Value)
-		case "status":
-			assert.Equal(t, "fail", *v.Value)
+		case "micro_status":
+			assert.Equal(t, "failure", *v.Value)
 		}
 	}
 	assert.Equal(t, *metric.Metric[0].Counter.Value, float64(1))
 
 	for _, v := range metric.Metric[1].Label {
 		switch *v.Name {
-		case "dc":
-			assert.Equal(t, "dc1", *v.Value)
-		case "node":
-			assert.Equal(t, "node1", *v.Value)
 		case "micro_version":
 			assert.Equal(t, version, *v.Value)
 		case "micro_id":
 			assert.Equal(t, id, *v.Value)
 		case "micro_name":
 			assert.Equal(t, name, *v.Value)
-		case "method":
+		case "micro_endpoint":
 			assert.Equal(t, "Test.Method", *v.Value)
-		case "status":
+		case "micro_status":
 			assert.Equal(t, "success", *v.Value)
 		}
 	}

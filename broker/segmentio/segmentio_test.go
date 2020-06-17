@@ -12,7 +12,7 @@ import (
 )
 
 func BenchmarkSegmentioCodecJsonPublish(b *testing.B) {
-	b.Skip()
+	//	b.Skip()
 	if tr := os.Getenv("TRAVIS"); len(tr) > 0 {
 		b.Skip()
 	}

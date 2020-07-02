@@ -228,16 +228,20 @@ func (k *kBroker) Publish(topic string, msg *broker.Message, opts ...broker.Publ
 				k.Unlock()
 				return err
 			}
+			delete(k.writers, topic)
+			k.Unlock()
+
 			cfg := k.writerConfig
 			cfg.Topic = topic
 			if err = cfg.Validate(); err != nil {
-				k.Unlock()
 				return err
 			}
 			writer := kafka.NewWriter(cfg)
-			k.writers[topic] = writer
-			k.Unlock()
-			err = writer.WriteMessages(k.opts.Context, kmsg)
+			if err = writer.WriteMessages(k.opts.Context, kmsg); err == nil {
+				k.Lock()
+				k.writers[topic] = writer
+				k.Unlock()
+			}
 		}
 	}
 

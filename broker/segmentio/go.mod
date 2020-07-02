@@ -7,7 +7,7 @@ require (
 	github.com/micro/go-micro/v2 v2.8.0
 	github.com/micro/go-plugins/broker/kafka/v2 v2.3.0
 	github.com/micro/go-plugins/codec/segmentio/v2 v2.3.0
-	github.com/segmentio/kafka-go v0.3.5
+	github.com/segmentio/kafka-go v0.3.7
 )
 
 replace github.com/micro/go-plugins/codec/segmentio/v2 => ../../codec/segmentio

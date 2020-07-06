@@ -6,13 +6,12 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
-	"github.com/micro/go-micro/v2/client/selector"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/registry"
+	"github.com/micro/go-micro/v2/router"
 	"github.com/micro/go-plugins/registry/kubernetes/v2/client"
 	"github.com/micro/go-plugins/registry/kubernetes/v2/client/mock"
 )
@@ -426,78 +425,41 @@ func TestListServices(t *testing.T) {
 
 func TestWatcher(t *testing.T) {
 	r := setupRegistry()
-	c := selector.NewSelector(selector.Registry(r))
-
-	// wait for watcher to get setup
-	time.Sleep(time.Millisecond * 100)
+	rtr := router.NewRouter(router.Registry(r))
 
 	// check that service is blank
-	if _, err := c.Select("foo.service"); err != selector.ErrNotFound {
+	if _, err := rtr.Lookup(router.QueryService("foo.service")); err != router.ErrRouteNotFound {
 		log.Fatal("expected selector.ErrNotFound")
 	}
 
 	// setup svc
 	svc1 := &registry.Service{Name: "foo.service", Version: "1"}
 	register(r, "pod-1", svc1)
-	time.Sleep(time.Millisecond * 100)
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-
-	c.Select("foo.service", selector.WithFilter(func(svcs []*registry.Service) []*registry.Service {
-		defer wg.Done()
-		if !hasServices(svcs, []*registry.Service{svc1}) {
-			t.Fatal("expected services to match")
-		}
-		return nil
-	}))
+	if routes, err := rtr.Lookup(router.QueryService("foo.service")); err != nil {
+		t.Fatalf("Querying service returned an error: %v", err)
+	} else if len(routes) != 1 {
+		t.Fatalf("Expected one route, found %v", len(routes))
+	}
 
 	// setup svc
 	svc2 := &registry.Service{Name: "foo.service", Version: "1"}
 	register(r, "pod-2", svc2)
 	time.Sleep(time.Millisecond * 100)
 
-	c.Select("foo.service", selector.WithFilter(func(svcs []*registry.Service) []*registry.Service {
-		defer wg.Done()
-		if !hasNodes(svcs[0].Nodes, []*registry.Node{svc1.Nodes[0], svc2.Nodes[0]}) {
-			t.Fatal("expected to have same nodes")
-		}
-		return nil
-	}))
-
-	// deregister
-	os.Setenv("HOSTNAME", "pod-1")
-	time.Sleep(time.Millisecond * 100)
-
-	c.Select("foo.service", selector.WithFilter(func(svcs []*registry.Service) []*registry.Service {
-		defer wg.Done()
-		if !hasServices(svcs, []*registry.Service{svc2}) {
-			t.Fatal("expected services to match")
-		}
-		return nil
-	}))
+	if routes, err := rtr.Lookup(router.QueryService("foo.service")); err != nil {
+		t.Fatalf("Querying service returned an error: %v", err)
+	} else if len(routes) != 2 {
+		t.Fatalf("Expected two routes, found %v", len(routes))
+	}
 
 	// remove pods
 	teardownRegistry()
 	time.Sleep(time.Millisecond * 100)
 
-	if _, err := c.Select("foo.service"); err != selector.ErrNotFound {
+	if _, err := rtr.Lookup(router.QueryService("foo.service")); err != router.ErrRouteNotFound {
 		log.Fatal("expected selector.ErrNotFound")
 	}
-
-	out := make(chan bool)
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-
-	select {
-	case <-out:
-		return
-	case <-time.After(time.Second):
-		t.Fatal("expected c.Select() to be called 3 times")
-	}
-
 }
 
 func hasNodes(a, b []*registry.Node) bool {

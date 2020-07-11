@@ -23,7 +23,7 @@ type kBroker struct {
 	sc []sarama.Client
 
 	connected bool
-	scMutex   sync.Mutex
+	scMutex   sync.RWMutex
 	opts      broker.Options
 }
 
@@ -83,13 +83,13 @@ func (k *kBroker) Address() string {
 }
 
 func (k *kBroker) Connect() error {
-	k.scMutex.Lock()
-	if k.connected {
-		k.scMutex.Unlock()
+	if k.isConnected() {
 		return nil
 	}
 
+	k.scMutex.Lock()
 	if k.c != nil {
+		k.connected = true
 		k.scMutex.Unlock()
 		return nil
 	}
@@ -123,6 +123,9 @@ func (k *kBroker) Connect() error {
 }
 
 func (k *kBroker) Disconnect() error {
+	if !k.isConnected() {
+		return nil
+	}
 	k.scMutex.Lock()
 	defer k.scMutex.Unlock()
 	for _, client := range k.sc {
@@ -155,17 +158,20 @@ func (k *kBroker) Init(opts ...broker.Option) error {
 	return nil
 }
 
+func (k *kBroker) isConnected() bool {
+	k.scMutex.RLock()
+	defer k.scMutex.RUnlock()
+	return k.connected
+}
+
 func (k *kBroker) Options() broker.Options {
 	return k.opts
 }
 
 func (k *kBroker) Publish(topic string, msg *broker.Message, opts ...broker.PublishOption) error {
-	k.scMutex.Lock()
-	if !k.connected {
-		k.scMutex.Unlock()
+	if !k.isConnected() {
 		return errors.New("[kafka] broker not connected")
 	}
-	k.scMutex.Unlock()
 
 	b, err := k.opts.Codec.Marshal(msg)
 	if err != nil {

@@ -165,6 +165,7 @@ func (k *kBroker) Publish(topic string, msg *broker.Message, opts ...broker.Publ
 		k.scMutex.Unlock()
 		return errors.New("[kafka] broker not connected")
 	}
+	k.scMutex.Unlock()
 
 	b, err := k.opts.Codec.Marshal(msg)
 	if err != nil {

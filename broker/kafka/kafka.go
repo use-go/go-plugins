@@ -3,6 +3,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/Shopify/sarama"
@@ -82,11 +83,12 @@ func (k *kBroker) Address() string {
 }
 
 func (k *kBroker) Connect() error {
+	k.scMutex.Lock()
 	if k.connected {
+		k.scMutex.Unlock()
 		return nil
 	}
 
-	k.scMutex.Lock()
 	if k.c != nil {
 		k.scMutex.Unlock()
 		return nil
@@ -115,7 +117,7 @@ func (k *kBroker) Connect() error {
 	k.p = p
 	k.sc = make([]sarama.Client, 0)
 	k.connected = true
-	defer k.scMutex.Unlock()
+	k.scMutex.Unlock()
 
 	return nil
 }
@@ -158,14 +160,22 @@ func (k *kBroker) Options() broker.Options {
 }
 
 func (k *kBroker) Publish(topic string, msg *broker.Message, opts ...broker.PublishOption) error {
+	k.scMutex.Lock()
+	if !k.connected {
+		k.scMutex.Unlock()
+		return errors.New("[kafka] broker not connected")
+	}
+
 	b, err := k.opts.Codec.Marshal(msg)
 	if err != nil {
 		return err
 	}
+
 	_, _, err = k.p.SendMessage(&sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(b),
 	})
+
 	return err
 }
 

@@ -149,12 +149,3 @@ MICRO_REGISTRY=kubernetes \
 MICRO_TRANSPORT=nats \
 service
 ```
-
-## Contributions
-
-A few contributions by others
-
-| Feature                                                                                  | Description                              | Author                                         |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------------------------------------- |
-| [Registry/Kubernetes](https://godoc.org/github.com/micro/go-plugins/registry/kubernetes) | Service discovery via the Kubernetes API | [@nickjackson](https://github.com/nickjackson) |
-| [Registry/Zookeeper](https://godoc.org/github.com/micro/go-plugins/registry/zookeeper)   | Service discovery using Zookeeper        | [@HeavyHorst](https://github.com/HeavyHorst)   |

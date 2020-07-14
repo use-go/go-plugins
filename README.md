@@ -4,8 +4,8 @@ Go plugins is a place for community maintained plugins.
 
 ## Overview
 
-Micro is built on a powerful pluggable architecture using interfaces. Plugins can be swapped out with zero code changes.
-This repository contains plugins for all micro related tools. Read on for further info.
+Micro is built as a pluggable framework using Go interfaces. Plugins enable you to swap out the underlying infrastructure without having 
+to rewrite all your code. This enables running the same software in multiple environments without a ton of work. Read further for more info.
 
 ## Getting Started
 

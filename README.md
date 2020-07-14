@@ -15,7 +15,7 @@ Follow us on [Twitter](https://twitter.com/microhq) or join the [Slack](http://s
 
 * [Contents](#contents)
 * [Usage](#usage)
-* [Build Pattern](#build-pattern)
+* [Build](#build)
 
 ## Contents
 

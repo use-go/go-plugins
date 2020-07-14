@@ -71,7 +71,7 @@ Build your service
 go build -o service ./main.go ./plugins.go
 ```
 
-### Env
+### Environment Variables
 
 Use environment variables to set the
 

@@ -16,7 +16,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/hashicorp/memberlist"
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/go-micro/v2/cmd"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/registry"
 	regutil "github.com/micro/go-micro/v2/util/registry"

@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/micro/go-micro/v2/broker"
 	"github.com/micro/go-micro/v2/codec/json"
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/go-micro/v2/cmd"
 	"github.com/nsqio/go-nsq"
 )
 

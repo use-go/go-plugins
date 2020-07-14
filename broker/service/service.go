@@ -4,7 +4,7 @@ package service
 import (
 	"github.com/micro/go-micro/v2/broker"
 	"github.com/micro/go-micro/v2/broker/service"
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/go-micro/v2/cmd"
 )
 
 func init() {

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/micro/go-micro/v2/codec/json"
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/go-micro/v2/cmd"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/micro/go-micro/v2/transport"
 	"github.com/nats-io/nats.go"

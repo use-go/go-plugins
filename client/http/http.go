@@ -19,7 +19,7 @@ import (
 	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/codec"
 	raw "github.com/micro/go-micro/v2/codec/bytes"
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/go-micro/v2/cmd"
 	errors "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/metadata"
 	"github.com/micro/go-micro/v2/registry"

@@ -12,4 +12,6 @@ require (
 
 replace github.com/micro/go-plugins/codec/segmentio/v2 => ../../codec/segmentio
 
+replace github.com/micro/go-plugins/broker/kafka/v2 => ../kafka
+
 replace github.com/coreos/etcd => github.com/ozonru/etcd v3.3.20-grpc1.27-origmodule+incompatible

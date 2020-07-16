@@ -8,8 +8,9 @@ import (
 	"github.com/micro/go-micro/v2/broker"
 	bmemory "github.com/micro/go-micro/v2/broker/memory"
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/registry/memory"
+	"github.com/micro/go-micro/v2/router"
+	rrouter "github.com/micro/go-micro/v2/router/registry"
 	"github.com/micro/go-micro/v2/server"
 	promwrapper "github.com/micro/go-plugins/wrapper/monitoring/prometheus/v2"
 	"github.com/prometheus/client_golang/prometheus"
@@ -39,13 +40,14 @@ func TestPrometheusMetrics(t *testing.T) {
 	// setup
 	reg := memory.NewRegistry()
 	brk := bmemory.NewBroker(broker.Registry(reg))
-	sel := selector.NewSelector(selector.Registry(reg))
 
 	name := "test"
 	id := "id-1234567890"
 	version := "1.2.3.4"
 
-	c := client.NewClient(client.Selector(sel))
+	c := client.NewClient(
+		client.Router(rrouter.NewRouter(router.Registry(registry))),
+	)
 	s := server.NewServer(
 		server.Name(name),
 		server.Version(version),

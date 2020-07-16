@@ -16,15 +16,21 @@ import (
 
 	"github.com/micro/go-micro/v2/broker"
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
+	"github.com/micro/go-micro/v2/cmd"
 	"github.com/micro/go-micro/v2/codec"
 	raw "github.com/micro/go-micro/v2/codec/bytes"
-	"github.com/micro/go-micro/v2/cmd"
 	errors "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/metadata"
 	"github.com/micro/go-micro/v2/registry"
+	"github.com/micro/go-micro/v2/router"
+	"github.com/micro/go-micro/v2/selector"
 	"github.com/micro/go-micro/v2/transport"
 )
+
+func filterLabel(r []router.Route) []router.Route {
+	//				selector.FilterLabel("protocol", "http")
+	return r
+}
 
 type httpClient struct {
 	once sync.Once
@@ -33,47 +39,6 @@ type httpClient struct {
 
 func init() {
 	cmd.DefaultClients["http"] = NewClient
-}
-
-func (h *httpClient) next(request client.Request, opts client.CallOptions) (selector.Next, error) {
-	service := request.Service()
-
-	// get proxy
-	if prx := os.Getenv("MICRO_PROXY"); len(prx) > 0 {
-		service = prx
-	}
-
-	// get proxy address
-	if prx := os.Getenv("MICRO_PROXY_ADDRESS"); len(prx) > 0 {
-		opts.Address = []string{prx}
-	}
-
-	// return remote address
-	if len(opts.Address) > 0 {
-		return func() (*registry.Node, error) {
-			return &registry.Node{
-				Address: opts.Address[0],
-				Metadata: map[string]string{
-					"protocol": "http",
-				},
-			}, nil
-		}, nil
-	}
-
-	// only get the things that are of mucp protocol
-	selectOptions := append(opts.SelectOptions, selector.WithFilter(
-		selector.FilterLabel("protocol", "http"),
-	))
-
-	// get next nodes from the selector
-	next, err := h.opts.Selector.Select(service, selectOptions...)
-	if err != nil && err == selector.ErrNotFound {
-		return nil, errors.NotFound("go.micro.client", err.Error())
-	} else if err != nil {
-		return nil, errors.InternalServerError("go.micro.client", err.Error())
-	}
-
-	return next, nil
 }
 
 func (h *httpClient) call(ctx context.Context, node *registry.Node, req client.Request, rsp interface{}, opts client.CallOptions) error {
@@ -221,12 +186,6 @@ func (h *httpClient) Call(ctx context.Context, req client.Request, rsp interface
 		opt(&callOpts)
 	}
 
-	// get next nodes from the selector
-	next, err := h.next(req, callOpts)
-	if err != nil {
-		return err
-	}
-
 	// check if we already have a deadline
 	d, ok := ctx.Deadline()
 	if !ok {
@@ -267,17 +226,33 @@ func (h *httpClient) Call(ctx context.Context, req client.Request, rsp interface
 			time.Sleep(t)
 		}
 
-		// select next node
-		node, err := next()
-		if err != nil && err == selector.ErrNotFound {
-			return errors.NotFound("go.micro.client", err.Error())
-		} else if err != nil {
-			return errors.InternalServerError("go.micro.client", err.Error())
+		// use the router passed as a call option, or fallback to the rpc clients router
+		if callOpts.Router == nil {
+			callOpts.Router = h.opts.Router
 		}
+		// use the selector passed as a call option, or fallback to the rpc clients selector
+		if callOpts.Selector == nil {
+			callOpts.Selector = h.opts.Selector
+		}
+
+		callOpts.SelectOptions = append(callOpts.SelectOptions, selector.WithFilter(filterLabel))
+
+		// lookup the route to send the request via
+		route, err := client.LookupRoute(req, callOpts)
+		if err != nil {
+			return err
+		}
+
+		// pass a node to enable backwards compatability as changing the
+		// call func would be a breaking change.
+		// todo v3: change the call func to accept a route
+		node := &registry.Node{Address: route.Address, Metadata: route.Metadata}
+		node.Metadata["protocol"] = "http"
 
 		// make the call
 		err = hcall(ctx, node, req, rsp, callOpts)
-		h.opts.Selector.Mark(req.Service(), node, err)
+		h.opts.Selector.Record(*route, err)
+
 		return err
 	}
 
@@ -321,12 +296,6 @@ func (h *httpClient) Stream(ctx context.Context, req client.Request, opts ...cli
 		opt(&callOpts)
 	}
 
-	// get next nodes from the selector
-	next, err := h.next(req, callOpts)
-	if err != nil {
-		return nil, err
-	}
-
 	// check if we already have a deadline
 	d, ok := ctx.Deadline()
 	if !ok {
@@ -358,15 +327,32 @@ func (h *httpClient) Stream(ctx context.Context, req client.Request, opts ...cli
 			time.Sleep(t)
 		}
 
-		node, err := next()
-		if err != nil && err == selector.ErrNotFound {
-			return nil, errors.NotFound("go.micro.client", err.Error())
-		} else if err != nil {
-			return nil, errors.InternalServerError("go.micro.client", err.Error())
+		// use the router passed as a call option, or fallback to the rpc clients router
+		if callOpts.Router == nil {
+			callOpts.Router = h.opts.Router
+		}
+		// use the selector passed as a call option, or fallback to the rpc clients selector
+		if callOpts.Selector == nil {
+			callOpts.Selector = h.opts.Selector
 		}
 
+		callOpts.SelectOptions = append(callOpts.SelectOptions, selector.WithFilter(filterLabel))
+
+		// lookup the route to send the request via
+		route, err := client.LookupRoute(req, callOpts)
+		if err != nil {
+			return nil, err
+		}
+
+		// pass a node to enable backwards compatability as changing the
+		// call func would be a breaking change.
+		// todo v3: change the call func to accept a route
+		node := &registry.Node{Address: route.Address, Metadata: route.Metadata}
+		node.Metadata["protocol"] = "http"
+
 		stream, err := h.stream(ctx, node, req, callOpts)
-		h.opts.Selector.Mark(req.Service(), node, err)
+		h.opts.Selector.Record(*route, err)
+
 		return stream, err
 	}
 
@@ -377,6 +363,7 @@ func (h *httpClient) Stream(ctx context.Context, req client.Request, opts ...cli
 
 	ch := make(chan response, callOpts.Retries)
 	var grr error
+	var err error
 
 	for i := 0; i < callOpts.Retries; i++ {
 		go func() {
@@ -491,14 +478,12 @@ func newClient(opts ...client.Option) client.Client {
 		options.Broker = broker.DefaultBroker
 	}
 
-	if options.Registry == nil {
-		options.Registry = registry.DefaultRegistry
+	if options.Router == nil {
+		options.Router = router.DefaultRouter
 	}
 
 	if options.Selector == nil {
-		options.Selector = selector.NewSelector(
-			selector.Registry(options.Registry),
-		)
+		options.Selector = selector.DefaultSelector
 	}
 
 	rc := &httpClient{

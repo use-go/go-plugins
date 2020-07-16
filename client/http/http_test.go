@@ -11,15 +11,16 @@ import (
 	"testing"
 
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/memory"
+	"github.com/micro/go-micro/v2/router"
+	rrouter "github.com/micro/go-micro/v2/router/registry"
 	"github.com/micro/go-plugins/client/http/v2/test"
 )
 
 func TestHTTPClient(t *testing.T) {
 	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
+	s := rrouter.NewRouter(router.Registry(r))
 
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -82,7 +83,7 @@ func TestHTTPClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewClient(client.Selector(s))
+	c := NewClient(client.Router(s))
 
 	for i := 0; i < 10; i++ {
 		msg := &test.Message{
@@ -103,7 +104,7 @@ func TestHTTPClient(t *testing.T) {
 
 func TestHTTPClientStream(t *testing.T) {
 	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
+	s := rrouter.NewRouter(router.Registry(r))
 
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -241,7 +242,7 @@ func TestHTTPClientStream(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewClient(client.Selector(s))
+	c := NewClient(client.Router(s))
 	req := c.NewRequest("test.service", "/foo/bar", new(test.Message))
 	stream, err := c.Stream(context.TODO(), req)
 	if err != nil {

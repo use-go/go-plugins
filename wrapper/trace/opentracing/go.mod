@@ -3,7 +3,7 @@ module github.com/micro/go-plugins/wrapper/trace/opentracing/v2
 go 1.13
 
 require (
-	github.com/micro/go-micro/v2 v2.9.1-0.20200716123506-3627e47f04eb
+	github.com/micro/go-micro/v2 v2.9.1-0.20200716153311-f9bf56239306
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/stretchr/testify v1.4.0
 )

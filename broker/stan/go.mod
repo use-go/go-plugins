@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/google/uuid v1.1.1
-	github.com/micro/go-micro/v2 v2.9.1-0.20200716123506-3627e47f04eb
+	github.com/micro/go-micro/v2 v2.9.1-0.20200716153311-f9bf56239306
 	github.com/nats-io/nats-streaming-server v0.16.2 // indirect
 	github.com/nats-io/stan.go v0.6.0
 )

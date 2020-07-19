@@ -5,20 +5,19 @@ import (
 	"testing"
 
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/registry/memory"
+	"github.com/micro/go-micro/v2/router"
 	"github.com/sony/gobreaker"
 )
 
 func TestBreaker(t *testing.T) {
 	// setup
 	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
 
 	c := client.NewClient(
 		// set the selector
-		client.Selector(s),
+		client.Router(rrouter.NewRouter(router.Registry(registry))),
 		// add the breaker wrapper
 		client.Wrap(NewClientWrapper()),
 	)
@@ -48,11 +47,10 @@ func TestBreaker(t *testing.T) {
 func TestCustomBreaker(t *testing.T) {
 	// setup
 	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
 
 	c := client.NewClient(
 		// set the selector
-		client.Selector(s),
+		client.Router(rrouter.NewRouter(router.Registry(registry))),
 		// add the breaker wrapper
 		client.Wrap(NewCustomClientWrapper(
 			gobreaker.Settings{},

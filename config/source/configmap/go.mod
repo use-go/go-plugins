@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/micro/go-micro/v2 v2.9.1
+	github.com/micro/go-micro/v2 v2.9.1-0.20200716153311-f9bf56239306
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -22,3 +22,5 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v11.0.0+incompatible
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20190708175518-244289f83105
 )
+
+replace github.com/coreos/etcd => github.com/ozonru/etcd v3.3.20-grpc1.27-origmodule+incompatible

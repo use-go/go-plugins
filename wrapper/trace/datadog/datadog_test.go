@@ -5,17 +5,16 @@ import (
 	"sync"
 	"testing"
 
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
-
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
-
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	microerr "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/registry/memory"
+	"github.com/micro/go-micro/v2/router"
+	rrouter "github.com/micro/go-micro/v2/router/registry"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/mocktracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	cli "github.com/micro/go-micro/v2/client"
 	srv "github.com/micro/go-micro/v2/server"
@@ -71,14 +70,13 @@ func TestClient(t *testing.T) {
 			defer mt.Stop()
 
 			registry := memory.NewRegistry()
-			sel := selector.NewSelector(selector.Registry(registry))
 
 			serverName := "micro.server.name"
 			serverID := "id-1234567890"
 			serverVersion := "1.0.0"
 
 			c := cli.NewClient(
-				client.Selector(sel),
+				client.Router(rrouter.NewRouter(router.Registry(registry))),
 				client.WrapCall(NewCallWrapper()),
 			)
 
@@ -152,14 +150,13 @@ func TestRace(t *testing.T) {
 	defer mt.Stop()
 
 	registry := memory.NewRegistry()
-	sel := selector.NewSelector(selector.Registry(registry))
 
 	serverName := "micro.server.name"
 	serverID := "id-1234567890"
 	serverVersion := "1.0.0"
 
 	c := cli.NewClient(
-		client.Selector(sel),
+		client.Router(rrouter.NewRouter(router.Registry(registry))),
 		client.WrapCall(NewCallWrapper()),
 	)
 

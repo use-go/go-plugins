@@ -1,18 +1,18 @@
 package ratelimit
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
-	"context"
-
 	"github.com/juju/ratelimit"
 	bmemory "github.com/micro/go-micro/v2/broker/memory"
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/errors"
 	rmemory "github.com/micro/go-micro/v2/registry/memory"
+	"github.com/micro/go-micro/v2/router"
+	rrouter "github.com/micro/go-micro/v2/router/registry"
 	"github.com/micro/go-micro/v2/server"
 	tmemory "github.com/micro/go-micro/v2/transport/memory"
 )
@@ -28,7 +28,6 @@ func (t *testHandler) Method(ctx context.Context, req *TestRequest, rsp *TestRes
 func TestRateClientLimit(t *testing.T) {
 	// setup
 	r := rmemory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
 	tr := tmemory.NewTransport()
 	testRates := []int{1, 10, 20}
 
@@ -36,8 +35,7 @@ func TestRateClientLimit(t *testing.T) {
 		b := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
 
 		c := client.NewClient(
-			// set the selector
-			client.Selector(s),
+			client.Router(rrouter.NewRouter(router.Registry(registry))),
 			client.Transport(tr),
 			// add the breaker wrapper
 			client.Wrap(NewClientWrapper(b, false)),
@@ -76,10 +74,11 @@ func TestRateServerLimit(t *testing.T) {
 		b := bmemory.NewBroker()
 		tr := tmemory.NewTransport()
 		_ = b
-		s := selector.NewSelector(selector.Registry(r))
 
 		br := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
-		c := client.NewClient(client.Selector(s), client.Transport(tr))
+		c := client.NewClient(
+			client.Router(rrouter.NewRouter(router.Registry(registry))),
+			client.Transport(tr))
 
 		name := fmt.Sprintf("test.service.%d", limit)
 

@@ -1,24 +1,23 @@
 package hystrix
 
 import (
+	"context"
 	"testing"
 
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/client/selector"
 	"github.com/micro/go-micro/v2/registry/memory"
-
-	"context"
+	"github.com/micro/go-micro/v2/router"
+	rrouter "github.com/micro/go-micro/v2/router/registry"
 )
 
 func TestBreaker(t *testing.T) {
 	// setup
-	r := memory.NewRegistry()
-	s := selector.NewSelector(selector.Registry(r))
+	registry := memory.NewRegistry()
 
 	c := client.NewClient(
 		// set the selector
-		client.Selector(s),
+		client.Router(rrouter.NewRouter(router.Registry(registry))),
 		// add the breaker wrapper
 		client.Wrap(NewClientWrapper()),
 	)

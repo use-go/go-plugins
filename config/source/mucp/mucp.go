@@ -72,7 +72,7 @@ func NewSource(opts ...source.Option) source.Source {
 		serviceName: addr,
 		path:        path,
 		opts:        options,
-		client:      proto.NewSourceService(addr, *cmd.DefaultOptions().Client),
+		client:      proto.NewSourceService(addr, *cmd.DefaultCmd.Options().Client),
 	}
 
 	return s

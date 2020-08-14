@@ -210,6 +210,7 @@ func (cw *consulWatcher) handle(idx uint64, data interface{}) {
 		wp, err := watch.Parse(map[string]interface{}{
 			"type":    "service",
 			"service": service,
+			"stale":   watchStale(cw.wo.Context),
 		})
 		if err == nil {
 			wp.Handler = cw.serviceHandler

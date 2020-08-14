@@ -8,6 +8,8 @@ import (
 	"github.com/micro/go-micro/v2/registry"
 )
 
+type watchStaleKey struct{}
+
 // Connect specifies services should be registered as Consul Connect services
 func Connect() registry.Option {
 	return func(o *registry.Options) {
@@ -91,6 +93,6 @@ func AllowWatchStale(v bool) registry.WatchOption {
 		if o.Context == nil {
 			o.Context = context.Background()
 		}
-		o.Context = context.WithValue(o.Context, "consul_allow_watch_stale", v)
+		o.Context = context.WithValue(o.Context, watchStaleKey{}, v)
 	}
 }

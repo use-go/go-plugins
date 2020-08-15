@@ -7,7 +7,7 @@ func watchStale(ctx context.Context) bool {
 		return true
 	}
 
-	stale, ok := ctx.Value("consul_allow_watch_stale").(bool)
+	stale, ok := ctx.Value(watchStaleKey{}).(bool)
 	if !ok {
 		return true
 	}

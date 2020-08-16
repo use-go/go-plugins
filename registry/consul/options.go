@@ -8,6 +8,8 @@ import (
 	"github.com/micro/go-micro/v2/registry"
 )
 
+type watchStaleKey struct{}
+
 // Connect specifies services should be registered as Consul Connect services
 func Connect() registry.Option {
 	return func(o *registry.Options) {
@@ -77,5 +79,20 @@ func TCPCheck(t time.Duration) registry.Option {
 			o.Context = context.Background()
 		}
 		o.Context = context.WithValue(o.Context, "consul_tcp_check", t)
+	}
+}
+
+//
+//	This mode allows any server to service the read regardless of whether it is the leader.
+//	This function is as AllowStale but only for watch
+//
+// [1] https://www.consul.io/api/features/consistency#stale
+//
+func AllowWatchStale(v bool) registry.WatchOption {
+	return func(o *registry.WatchOptions) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		o.Context = context.WithValue(o.Context, watchStaleKey{}, v)
 	}
 }

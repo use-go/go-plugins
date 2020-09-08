@@ -18,18 +18,18 @@ type allowedCors struct {
 func (ac *allowedCors) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:   "cors-allowed-headers",
-			Usage:  "Comma-seperated list of allowed headers",
+			Name:    "cors-allowed-headers",
+			Usage:   "Comma-seperated list of allowed headers",
 			EnvVars: []string{"CORS_ALLOWED_HEADERS"},
 		},
 		&cli.StringFlag{
-			Name:   "cors-allowed-origins",
-			Usage:  "Comma-seperated list of allowed origins",
+			Name:    "cors-allowed-origins",
+			Usage:   "Comma-seperated list of allowed origins",
 			EnvVars: []string{"CORS_ALLOWED_ORIGINS"},
 		},
 		&cli.StringFlag{
-			Name:   "cors-allowed-methods",
-			Usage:  "Comma-seperated list of allowed methods",
+			Name:    "cors-allowed-methods",
+			Usage:   "Comma-seperated list of allowed methods",
 			EnvVars: []string{"CORS_ALLOWED_METHODS"},
 		},
 	}

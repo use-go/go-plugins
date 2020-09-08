@@ -24,24 +24,24 @@ type response struct {
 func (i *index) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:   "index_service",
-			Usage:  "Service/Method to route index to. Specified without namespace e.g greeter/say/hello",
+			Name:    "index_service",
+			Usage:   "Service/Method to route index to. Specified without namespace e.g greeter/say/hello",
 			EnvVars: []string{"INDEX_SERVICE"},
 		},
 		// flags for response instead of service
 		&cli.IntFlag{
-			Name:   "index_status",
-			Usage:  "HTTP status code for response",
+			Name:    "index_status",
+			Usage:   "HTTP status code for response",
 			EnvVars: []string{"INDEX_STATUS"},
 		},
 		&cli.StringFlag{
-			Name:   "index_header",
-			Usage:  "Comma separated list of key-value pairs for response header",
+			Name:    "index_header",
+			Usage:   "Comma separated list of key-value pairs for response header",
 			EnvVars: []string{"INDEX_HEADER"},
 		},
 		&cli.StringFlag{
-			Name:   "index_body",
-			Usage:  "Body of the response",
+			Name:    "index_body",
+			Usage:   "Body of the response",
 			EnvVars: []string{"INDEX_BODY"},
 		},
 	}

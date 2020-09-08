@@ -35,7 +35,7 @@ func TestRateClientLimit(t *testing.T) {
 		b := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
 
 		c := client.NewClient(
-			client.Router(rrouter.NewRouter(router.Registry(registry))),
+			client.Router(rrouter.NewRouter(router.Registry(r))),
 			client.Transport(tr),
 			// add the breaker wrapper
 			client.Wrap(NewClientWrapper(b, false)),
@@ -77,7 +77,7 @@ func TestRateServerLimit(t *testing.T) {
 
 		br := ratelimit.NewBucketWithRate(float64(limit), int64(limit))
 		c := client.NewClient(
-			client.Router(rrouter.NewRouter(router.Registry(registry))),
+			client.Router(rrouter.NewRouter(router.Registry(r))),
 			client.Transport(tr))
 
 		name := fmt.Sprintf("test.service.%d", limit)
